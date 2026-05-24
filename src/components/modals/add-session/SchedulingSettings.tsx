@@ -72,7 +72,7 @@ export default function SchedulingSettings({
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="label">End</label>
                 <input
                   type="time"
@@ -80,7 +80,7 @@ export default function SchedulingSettings({
                   readOnly
                   className="input bg-gray-100"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

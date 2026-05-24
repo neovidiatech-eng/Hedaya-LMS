@@ -41,24 +41,27 @@ export default function RevenueExpenseChart({ sessionsData }: RevenueExpenseChar
       })
     : [];
 
+  const primary = "var(--color-primary)";
+  const primaryLight = "color-mix(in srgb, var(--color-primary) 35%, white)";
+
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 h-full flex flex-col justify-between">
       <div className="flex justify-between items-start mb-4">
         {isSessions ? (
           <div className="flex items-center gap-4 order-1">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#00a8a8]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-primary" />
               <span className="text-gray-500 text-xs font-medium">{t("dashboard.sessionsCount")}</span>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-4 order-1">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#3b82f6]" />
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primary }} />
               <span className="text-gray-500 text-xs font-medium">{t("dashboard.revenue")}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryLight }} />
               <span className="text-gray-500 text-xs font-medium">{t("dashboard.expenses")}</span>
             </div>
           </div>
@@ -85,7 +88,7 @@ export default function RevenueExpenseChart({ sessionsData }: RevenueExpenseChar
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="#00a8a8"
+                stroke={primary}
                 strokeWidth={3}
                 fill="url(#colorSessions)"
                 name={t("dashboard.sessionsCount")}
@@ -93,8 +96,8 @@ export default function RevenueExpenseChart({ sessionsData }: RevenueExpenseChar
               />
               <defs>
                 <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00a8a8" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#00a8a8" stopOpacity={0} />
+                  <stop offset="5%" stopColor={primary} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
             </AreaChart>
@@ -113,7 +116,7 @@ export default function RevenueExpenseChart({ sessionsData }: RevenueExpenseChar
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#3b82f6"
+                stroke={primary}
                 strokeWidth={4}
                 fill="url(#colorRevenue)"
                 name={t("dashboard.revenue")}
@@ -122,7 +125,7 @@ export default function RevenueExpenseChart({ sessionsData }: RevenueExpenseChar
               <Area
                 type="monotone"
                 dataKey="expenses"
-                stroke="#f59e0b"
+                stroke={primaryLight}
                 strokeWidth={4}
                 fill="url(#colorExpenses)"
                 name={t("dashboard.expenses")}
@@ -130,12 +133,12 @@ export default function RevenueExpenseChart({ sessionsData }: RevenueExpenseChar
               />
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor={primary} stopOpacity={0.1} />
+                  <stop offset="95%" stopColor={primary} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                  <stop offset="5%" stopColor={primaryLight} stopOpacity={0.1} />
+                  <stop offset="95%" stopColor={primaryLight} stopOpacity={0} />
                 </linearGradient>
               </defs>
             </AreaChart>

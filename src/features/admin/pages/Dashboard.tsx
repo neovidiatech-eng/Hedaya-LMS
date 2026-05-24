@@ -100,7 +100,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => window.location.reload()}
-          className="px-6 py-2.5 bg-[#369589] hover:bg-[#2c7a70] text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg shadow-teal-100"
+          className="px-6 py-2.5 btn-primary text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
         >
           {t("common.retry")}
         </button>
@@ -186,7 +186,7 @@ export default function Dashboard() {
         {/* Upcoming Sessions */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
           <div className="flex justify-between items-center mb-6">
-            <span className="text-xs bg-[#eefcfc] text-[#00a8a8] px-3 py-1 rounded-full font-bold">
+            <span className="text-xs bg-primary-light text-primary px-3 py-1 rounded-full font-bold">
               {t("dashboard.scheduledSoon")}
             </span>
 
@@ -252,7 +252,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="w-14 h-14 bg-[#eefcfc] rounded-full flex items-center justify-center mb-3">
+              <div className="w-14 h-14 bg-primary-light rounded-full flex items-center justify-center mb-3">
                 <span className="text-2xl">📅</span>
               </div>
 
@@ -277,7 +277,7 @@ export default function Dashboard() {
 <h2 className="text-lg font-bold text-gray-800">
   {t("dashboard.activityLogs")}
 </h2>
- <span className="text-xs bg-[#eefcfc] text-[#00a8a8] px-3 py-1 rounded-full font-bold">
+ <span className="text-xs bg-primary-light text-primary px-3 py-1 rounded-full font-bold">
   {logsData?.data?.length || 0} {t("dashboard.logsCount")}
 </span>
   </div>

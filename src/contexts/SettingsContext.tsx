@@ -38,7 +38,7 @@ const defaultSettings: PlatformSettings = {
   description: 'أكاديمية هداية - منصة تعليمية متكاملة لإدارة الكورسات والطلاب والمعلمين',
   logoUrl: '/logo.jpeg',
   faviconUrl: '/logo.jpeg',
-  primaryColor: '#2563eb',
+  primaryColor: '#369589',
   secondaryColor: '#0f172a',
   accentColor: '#06b6d4',
   fontFamily: 'Cairo',

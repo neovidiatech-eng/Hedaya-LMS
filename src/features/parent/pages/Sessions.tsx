@@ -93,7 +93,7 @@ export default function Sessions() {
       const startTotal = getMinutes(String(startTime));
       const endTotal = getMinutes(String(endTime));
       let diff = endTotal - startTotal;
-      if (diff < 0) diff += 24 * 60;
+      if (diff < 0) diff += 24 * 60*5;
       return diff;
     } catch {
       return 0;

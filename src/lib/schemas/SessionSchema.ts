@@ -19,10 +19,6 @@ export const getSessionSchema = (t: TFunc) => getBaseSession(t).extend({
   sessionDate: z.string().min(1, t("validation.required")),
   duration: z.string().min(1, t("validation.required")),
   startTime: z.string().min(1, t("validation.required")),
-  endTime: z.string().min(1, t("validation.required")),
-}).refine((data) => data.endTime > data.startTime, {
-  message: t("validation.required"), // Ideally 'end time must be after start time'
-  path: ["endTime"],
 });
 
 export const getMultipleSessionsSchema = (t: TFunc) => getBaseSession(t).extend({

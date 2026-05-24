@@ -6,10 +6,8 @@ interface ActiveUsersChartProps {
   activeUsers?: ActiveUsers;
 }
 
-const COLORS = {
-  students: "#00a8a8",
-  instructors: "#daad15",
-};
+const PRIMARY = "var(--color-primary)";
+const PRIMARY_LIGHT = "color-mix(in srgb, var(--color-primary) 35%, white)";
 
 export default function ActiveUsersChart({ activeUsers }: ActiveUsersChartProps) {
   const { t } = useTranslation();
@@ -18,8 +16,8 @@ export default function ActiveUsersChart({ activeUsers }: ActiveUsersChartProps)
   const total = students + instructors;
 
   const chartData = [
-    { name: t("dashboard.students"), value: students, color: COLORS.students },
-    { name: t("dashboard.instructors"), value: instructors, color: COLORS.instructors },
+    { name: t("dashboard.students"), value: students, color: PRIMARY },
+    { name: t("dashboard.instructors"), value: instructors, color: PRIMARY_LIGHT },
   ];
 
   const studentsPercent = total > 0 ? Math.round((students / total) * 100) : 0;
@@ -75,7 +73,7 @@ export default function ActiveUsersChart({ activeUsers }: ActiveUsersChartProps)
       <div className="w-full mt-6 space-y-3">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2 order-2">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.students }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PRIMARY }} />
             <span className="text-gray-600 font-medium">{t("dashboard.students")}</span>
           </div>
           <div className="flex items-center gap-2 order-1">
@@ -87,13 +85,13 @@ export default function ActiveUsersChart({ activeUsers }: ActiveUsersChartProps)
         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${studentsPercent}%`, backgroundColor: COLORS.students }}
+            style={{ width: `${studentsPercent}%`, backgroundColor: PRIMARY }}
           />
         </div>
 
         <div className="flex items-center justify-between text-sm mt-3">
           <div className="flex items-center gap-2 order-2">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.instructors }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PRIMARY_LIGHT }} />
             <span className="text-gray-600 font-medium">{t("dashboard.instructors")}</span>
           </div>
           <div className="flex items-center gap-2 order-1">
@@ -105,7 +103,7 @@ export default function ActiveUsersChart({ activeUsers }: ActiveUsersChartProps)
         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${instructorsPercent}%`, backgroundColor: COLORS.instructors }}
+            style={{ width: `${instructorsPercent}%`, backgroundColor: PRIMARY_LIGHT }}
           />
         </div>
       </div>

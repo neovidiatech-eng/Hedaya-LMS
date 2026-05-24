@@ -35,16 +35,16 @@ const getActivityColor = (type: string) => {
   switch (type?.toLowerCase()) {
     case "student":
     case "student_register":
-      return "bg-blue-500";
+      return "bg-primary";
     case "teacher":
     case "teacher_register":
-      return "bg-green-500";
+      return "bg-primary";
     case "session":
     case "session_create":
     case "class":
-      return "bg-orange-400";
+      return "bg-primary";
     default:
-      return "bg-[#00a8a8]";
+      return "bg-primary";
   }
 };
 
