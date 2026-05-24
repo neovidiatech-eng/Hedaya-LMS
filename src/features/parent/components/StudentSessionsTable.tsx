@@ -135,7 +135,7 @@ export default function StudentSessionsTable({ studentId }: Props) {
                         setSelectedSession(session);
                         setShowViewModal(true);
                       }}
-                      className="p-2 bg-blue-50/50 text-blue-600 hover:bg-blue-600 hover:text-white hover:shadow-md rounded-xl transition-all duration-300"
+                      className="p-2 bg-blue-50/50 text-blue-600 hover:bg-primary hover:text-white hover:shadow-md rounded-xl transition-all duration-300"
                       title={t('view')}
                     >
                       <Eye className="w-5 h-5" />

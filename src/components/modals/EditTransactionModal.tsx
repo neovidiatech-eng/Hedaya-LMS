@@ -169,7 +169,7 @@ export default function EditTransactionModal({ isOpen, onClose, transaction, onS
               <button
                 type="button"
                 onClick={handleCalculate}
-                className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium bg-primary/80"
               >
                 {language === 'ar' ? 'احسب المبلغ' : 'Calculate Amount'}
               </button>
@@ -246,7 +246,7 @@ export default function EditTransactionModal({ isOpen, onClose, transaction, onS
             <button type="button" onClick={onClose} className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
               {text.cancel[language]}
             </button>
-            <button type="submit" className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2">
+            <button type="submit" className="flex-1 px-6 py-3 bg-primary text-white rounded-lg bg-primary/80 font-medium flex items-center justify-center gap-2">
               <Save className="w-4 h-4" />
               {text.save[language]}
             </button>

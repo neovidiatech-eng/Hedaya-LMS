@@ -149,7 +149,7 @@ export default function ViewSessionDetailsModal({ isOpen, onClose, sessionGroup,
                       href={sessionGroup.meetingLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg bg-primary/80 transition-colors text-center font-medium"
                     >
                       {text.openLink[language]}
                     </a>

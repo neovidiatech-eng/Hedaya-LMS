@@ -170,7 +170,7 @@ export default function SubscribePlanModal({ isOpen, onClose }: SubscribePlanMod
 
                     <button
                       className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${plan.isPopular
-                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                          ? 'bg-primary text-white bg-primary/80 shadow-md hover:shadow-lg'
                           : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                         }`}
                     >

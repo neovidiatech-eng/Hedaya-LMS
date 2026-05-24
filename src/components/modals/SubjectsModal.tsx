@@ -136,7 +136,7 @@ export default function SubjectForm({ initial, onSave, onCancel, title }: Subjec
             <button type="button" onClick={onCancel} className="flex-1 px-4 py-3 border border-gray-300 rounded-xl font-medium">
               {t('cancel')}
             </button>
-            <button type="submit" className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-600/20">
+            <button type="submit" className="flex-1 px-4 py-3 bg-primary text-white rounded-xl font-medium shadow-lg shadow-blue-600/20">
               {t('save')}
             </button>
           </div>

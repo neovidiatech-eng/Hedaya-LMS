@@ -86,7 +86,7 @@ export default function Subjects() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/20"
+          className="flex items-center gap-2 bg-primary bg-primary/80 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/20"
         >
           <Plus className="w-5 h-5" />
           {language === 'ar' ? 'إضافة مادة جديدة' : 'Add Subject'}
@@ -142,7 +142,7 @@ export default function Subjects() {
                 key={s}
                 onClick={() => setFilterActive(s)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${filterActive === s
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >

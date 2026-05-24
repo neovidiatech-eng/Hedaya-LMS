@@ -137,7 +137,7 @@ export default function FeedbackModal({ visible, onClose, sessionId, sessionTitl
             type="primary"
             htmlType="submit"
             loading={isPending}
-            className="h-11 px-10 rounded-xl font-bold bg-blue-600 border-none shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-xl transition-all"
+            className="h-11 px-10 rounded-xl font-bold bg-primary border-none shadow-lg shadow-blue-200 bg-primary/80 hover:shadow-xl transition-all"
           >
             Send Feedback
           </Button>

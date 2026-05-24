@@ -179,7 +179,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSave, currencie
                 />
                 <input type="number" step="0.01" placeholder="السعر" {...register('ratePerHour')} className="px-3 py-2 border rounded-lg text-start text-sm" />
               </div>
-              <button type="button" onClick={handleAutoCalculate} className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+              <button type="button" onClick={handleAutoCalculate} className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium">
                 {language === 'ar' ? 'احسب المبلغ تلقائياً' : 'Auto Calculate'}
               </button>
             </div>
