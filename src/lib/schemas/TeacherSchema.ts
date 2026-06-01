@@ -6,6 +6,7 @@ export const getTeacherSchema = (t: TFunc) => z.object({
   name: z.string().min(3, t("validation.min", { count: 3 })),
   email: z.string().email(t("validation.email")),
   phone: z.string().min(8, t("validation.min", { count: 8 })),
+  phone_code: z.string().min(1, t("validation.required")),
 
  password: z
   .string()
