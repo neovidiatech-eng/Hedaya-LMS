@@ -121,7 +121,7 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  const handleAddLateDiscount = () => {
+  const handleAddLateDiscount = () => {   
     if (!lateMinutes || !discountPercentage) return;
 
     addLateDiscountMutation.mutate(undefined, {

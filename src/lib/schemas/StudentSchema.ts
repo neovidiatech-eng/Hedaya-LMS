@@ -12,7 +12,13 @@ export const getStudentSchema = (t: TFunc) => z.object({
   plan: z.string().optional().or(z.literal('')),
   country: z.string().min(1, t("validation.required")),
   status: z.enum(['approved', 'pending', 'rejected']),
-  password: z.string().min(6, t("validation.min", { count: 6 })).optional().or(z.literal('')),
+  password: z
+  .string()
+  .min(8, t("validation.passwordMin", { count: 8 }))
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]+$/,
+    t("validation.passwordComplex")
+  ),
   timezone: z.string().optional(),
 }).superRefine((data, ctx) => {
   const { phone_code, phone } = data;

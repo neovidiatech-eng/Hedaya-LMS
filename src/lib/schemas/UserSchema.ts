@@ -8,7 +8,13 @@ export const getUserSchema = (t: TFunc) => z.object({
   countryCode: z.string(),
   phone: z.string().min(1, t("validation.required")),
   role: z.string().min(1, t("validation.required")),
-  password: z.string().min(6, t("validation.min", { count: 6 })),
+  password: z
+  .string()
+  .min(8, t("validation.passwordMin", { count: 8 }))
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]+$/,
+    t("validation.passwordComplex")
+  ),
   permissions: z.array(z.string()).optional(),
   timezone: z.string().optional(),
 });
