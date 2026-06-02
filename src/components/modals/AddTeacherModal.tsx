@@ -17,6 +17,7 @@ interface AddTeacherModalProps {
   onSubmit: (teacherData: TeacherFormData) => void;
 }
 
+
 export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeacherModalProps) {
   const { language, t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
