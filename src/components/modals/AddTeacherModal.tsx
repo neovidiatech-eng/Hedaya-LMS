@@ -58,13 +58,17 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
       .catch(() => setCountryCodes([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]));
   }, []);
 
-  const handleOnSubmit = (data: TeacherFormData) => {
-    onSubmit({
-      ...data,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    onClose();
-    reset();
+  const handleOnSubmit = async (data: TeacherFormData) => {
+    try {
+      await onSubmit({
+        ...data,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      onClose();
+      reset();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   if (!isOpen) return null;

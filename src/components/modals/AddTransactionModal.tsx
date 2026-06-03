@@ -96,16 +96,17 @@ export default function AddTransactionModal({ isOpen, onClose, onSave, currencie
     setValue('amount', Number(total.toFixed(2)));
   };
   console.log(errors)
-  const onSubmit = (data: TransactionFormData) => {
-    if (editingTransaction) {
-      onSave({ ...data, id: editingTransaction.id } as Transaction);
-      console.log(data)
-    } else {
-      onSave(data);
-      console.log(data)
-
+  const onSubmit = async (data: TransactionFormData) => {
+    try {
+      if (editingTransaction) {
+        await onSave({ ...data, id: editingTransaction.id } as Transaction);
+      } else {
+        await onSave(data);
+      }
+      onClose();
+    } catch (error) {
+      console.error('Save failed:', error);
     }
-    onClose();
   };
   if (!isOpen) return null;
 

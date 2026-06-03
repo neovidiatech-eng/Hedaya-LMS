@@ -89,8 +89,12 @@ export default function AddExpenseModal({ isOpen, onClose, onSave, initialData }
 
   if (!isOpen) return null;
 
-  const onSubmit = (data: ExpenseFormData) => {
-    onSave(data);
+  const onSubmit = async (data: ExpenseFormData) => {
+    try {
+      await onSave(data);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

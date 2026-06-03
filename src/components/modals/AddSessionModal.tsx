@@ -314,36 +314,39 @@ export default function AddSessionModal({
     };
   };
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     if (sessionsExceedRemaining) {
       setSessionsLimitError(sessionsLimitMessage);
       return;
     }
 
-    if (schedulingMode === 'single') {
-      onAdd(data as SessionFormData);
-    } else {
-      const batchData: MultipleSessionsPayload = {
-        formData: data as MultipleSessionsFormData,
-        selectedDays: watchSelectedDays,
-        sessions: previewSessions.map((session) => ({
-          date: session.date,
-          day: new Date(session.date + 'T00:00:00').toLocaleDateString(
-            'en-US',
-            {
-              weekday: 'long',
-            }
-          ) as DayOfWeek,
-          time: data.startTime,
-        })),
-      };
+    try {
+      if (schedulingMode === 'single') {
+        await onAdd(data as SessionFormData);
+      } else {
+        const batchData: MultipleSessionsPayload = {
+          formData: data as MultipleSessionsFormData,
+          selectedDays: watchSelectedDays,
+          sessions: previewSessions.map((session) => ({
+            date: session.date,
+            day: new Date(session.date + 'T00:00:00').toLocaleDateString(
+              'en-US',
+              {
+                weekday: 'long',
+              }
+            ) as DayOfWeek,
+            time: data.startTime,
+          })),
+        };
 
-      onAdd(batchData);
+        await onAdd(batchData);
+      }
+
+      reset();
+      onClose();
+    } catch (e) {
+      console.error(e);
     }
-
-    reset();
-
-    onClose();
   };
 
   if (!isOpen) return null;

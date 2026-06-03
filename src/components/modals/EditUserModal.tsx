@@ -73,13 +73,17 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
 
   if (!isOpen) return null;
 
-  const onFormSubmit = (data: UserFormData) => {
-    onSubmit({
-      ...data,
-      id: userData.id,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    onClose();
+  const onFormSubmit = async (data: UserFormData) => {
+    try {
+      await onSubmit({
+        ...data,
+        id: userData.id,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      onClose();
+    } catch (error) {
+      console.error('Submit failed:', error);
+    }
   };
 
   const uniqueCountryCodes = Array.from(

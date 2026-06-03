@@ -74,7 +74,7 @@ export default function EditPlanModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const filteredFeatures = formData.features.filter((f) => f.trim() !== "");
     if (filteredFeatures.length === 0) {
@@ -85,13 +85,16 @@ export default function EditPlanModal({
       );
       return;
     }
-    onSave({
-      ...plan,
-      ...formData,
-      features: filteredFeatures,
-    });
-
-    onClose();
+    try {
+      await onSave({
+        ...plan,
+        ...formData,
+        features: filteredFeatures,
+      });
+      onClose();
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
   };
 
   const addFeature = () => {

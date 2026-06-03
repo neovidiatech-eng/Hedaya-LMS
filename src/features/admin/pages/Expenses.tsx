@@ -128,6 +128,7 @@ export default function Expenses() {
       setSelectedExpense(null);
     } catch (error) {
       console.log(error);
+      throw error;
     }
   };
 

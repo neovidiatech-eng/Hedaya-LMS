@@ -256,9 +256,13 @@ export default function AddRoleModal({
         onClose();
     };
 
-    const onFormSubmit = (data: RoleFormData) => {
-        onSubmit(data);
-        reset();
+    const onFormSubmit = async (data: RoleFormData) => {
+        try {
+            await onSubmit(data);
+            reset();
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     const toggleCategory = (category: string) => {

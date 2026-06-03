@@ -31,13 +31,17 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
       country: 'مصر'
     }
   });
-  const onFormSubmit = (data: StudentFormData) => {
-    onSubmit({
-      ...data,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    reset();
-    onClose();
+  const onFormSubmit = async (data: StudentFormData) => {
+    try {
+      await onSubmit({
+        ...data,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      reset();
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {

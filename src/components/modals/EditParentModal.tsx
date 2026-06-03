@@ -63,13 +63,16 @@ export default function EditParentModal({
     }
   }, [parent, reset]);
 
-  const handleOnSubmit = (data: ParentFormData) => {
-    onSubmit({
-      ...data,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-
-    onClose();
+  const handleOnSubmit = async (data: ParentFormData) => {
+    try {
+      await onSubmit({
+        ...data,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      onClose();
+    } catch (error) {
+      console.error('Submit failed:', error);
+    }
   };
 
   const text = {

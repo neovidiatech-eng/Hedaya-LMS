@@ -82,13 +82,17 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
 
   if (!isOpen) return null;
 
-  const onFormSubmit = (data: UserFormData) => {
-    onSubmit({
-      ...data,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    reset();
-    onClose();
+  const onFormSubmit = async (data: UserFormData) => {
+    try {
+      await onSubmit({
+        ...data,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      reset();
+      onClose();
+    } catch (error) {
+      console.error('Submit failed:', error);
+    }
   };
 
   const uniqueCountryCodes = Array.from(

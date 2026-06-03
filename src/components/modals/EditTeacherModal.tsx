@@ -73,9 +73,13 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
       .catch(() => setCountryCodes([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]));
   }, []);
 
-  const handleOnSubmit = (data: TeacherFormData) => {
-    onSubmit(data);
-    onClose();
+  const handleOnSubmit = async (data: TeacherFormData) => {
+    try {
+      await onSubmit(data);
+      onClose();
+    } catch (error) {
+      console.error('Submit failed:', error);
+    }
   };
 
   if (!isOpen || !teacher) return null;

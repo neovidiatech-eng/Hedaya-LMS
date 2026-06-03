@@ -10,7 +10,7 @@ export default function WithdrawalModal({ isOpen, onClose, balance, onWithdraw, 
   if (!isOpen) return null;
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const numAmount = parseFloat(amount);
     if (!numAmount || numAmount <= 0) {
@@ -21,10 +21,13 @@ export default function WithdrawalModal({ isOpen, onClose, balance, onWithdraw, 
       message.error(isRtl ? 'المبلغ يتجاوز الرصيد الحالي' : 'Amount exceeds current balance');
       return;
     }
-    setAmount('');
-    onWithdraw(numAmount);
-    onClose();
-    
+    try {
+      await onWithdraw(numAmount);
+      setAmount('');
+      onClose();
+    } catch (error) {
+      console.error('Withdrawal failed:', error);
+    }
   };
 
 

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useSettings } from "../../contexts/SettingsContext";
 import { disconnectSocket } from "../../utils/socket";
+import i18n from "../../../i18n";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -91,12 +92,12 @@ export default function Header({
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
                 style={{ backgroundColor: settings.primaryColor }}
               >
-                {settings.name?.charAt(0) || "H"}
+                                {(i18n.language.startsWith('ar') ? settings.nameAr : settings.nameEn)?.charAt(0) || "H"}
               </div>
             )}
             <div className="hidden sm:block text-start">
               <h1 className="text-lg font-bold text-gray-900">
-                {settings.name}
+                                {i18n.language.startsWith('ar') ? settings.nameAr : settings.nameEn}
               </h1>
               <p className="text-xs text-gray-500">
                 {roleSubtitle[userRole][language]}

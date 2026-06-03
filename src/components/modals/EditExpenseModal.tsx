@@ -73,19 +73,23 @@ export default function EditExpenseModal({ isOpen, onClose, expense, onSave }: E
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: expense.id,
-      description: formData.description,
-      amount: parseFloat(formData.amount),
-      currency: formData.currency,
-      category: formData.category,
-      date: formData.date,
-      paymentMethod: formData.paymentMethod,
-      status: formData.status
-    });
-    onClose();
+    try {
+      await onSave({
+        id: expense.id,
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        category: formData.category,
+        date: formData.date,
+        paymentMethod: formData.paymentMethod,
+        status: formData.status
+      });
+      onClose();
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
   };
 
   return (

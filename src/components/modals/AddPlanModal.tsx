@@ -114,13 +114,17 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
     featurePlaceholder: { ar: 'اكتب الميزة...', en: 'Enter feature...' }
   };
 
-  const onSubmit = (data: PlanFormData) => {
-    onSave({
-      ...data,
-      id: initialData?.id
-    });
-    reset();
-    onClose();
+  const onSubmit = async (data: PlanFormData) => {
+    try {
+      await onSave({
+        ...data,
+        id: initialData?.id
+      });
+      reset();
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
 

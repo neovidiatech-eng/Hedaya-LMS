@@ -54,9 +54,9 @@ export default function Users() {
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
-  const handleAddUser = (userData: UserFormData) => {
-    addStaff.mutate(
-      {
+  const handleAddUser = async (userData: UserFormData) => {
+    try {
+      await addStaff.mutateAsync({
         name: userData.name,
         email: userData.email,
         password: userData.password,
@@ -64,18 +64,17 @@ export default function Users() {
         phone: userData.phone,
         roleId: userData.role,
         timezone: userData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-      },
-      {
-        onSuccess: () => {
-          setIsAddModalOpen(false);
-        },
-      }
-    );
+      });
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
-  const handleEditUser = (userData: UserFormData & { id: string }) => {
-    updateStaff.mutate(
-      {
+  const handleEditUser = async (userData: UserFormData & { id: string }) => {
+    try {
+      await updateStaff.mutateAsync({
         id: userData.id,
         staff: {
           name: userData.name,
@@ -86,14 +85,13 @@ export default function Users() {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           ...(userData.password ? { password: userData.password } : {}),
         },
-      },
-      {
-        onSuccess: () => {
-          setIsEditModalOpen(false);
-          setSelectedUser(null);
-        },
-      }
-    );
+      });
+      setIsEditModalOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
   const handleDeleteUser = async (userId: string) => {

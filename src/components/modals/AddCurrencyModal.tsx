@@ -76,9 +76,13 @@ export default function AddCurrencyModal({ isOpen, onClose, onSave, initialData 
 
   if (!isOpen) return null;
 
-  const onSubmit = (data: CurrencyFormData) => {
-    onSave({ ...data, id: initialData?.id });
-    onClose();
+  const onSubmit = async (data: CurrencyFormData) => {
+    try {
+      await onSave({ ...data, id: initialData?.id });
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

@@ -93,9 +93,13 @@ export default function AddExamModal({
     }
   }, [initialData, reset, isOpen]);
 
-  const handleOnSubmit = (data: ExamFormData) => {
-    onAdd(data);
-    onClose();
+  const handleOnSubmit = async (data: ExamFormData) => {
+    try {
+      await onAdd(data);
+      onClose();
+    } catch (error) {
+      console.error('Submit failed:', error);
+    }
   };
 
   if (!isOpen) return null;

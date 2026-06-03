@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import i18n from '../../i18n';
 
 export interface SocialLink {
   platform: 'whatsapp' | 'facebook' | 'instagram' | 'twitter' | 'youtube' | 'tiktok' | 'telegram' | 'linkedin';
@@ -15,7 +16,9 @@ export interface SeoSettings {
 }
 
 export interface PlatformSettings {
-  name: string;
+  // Platform names in Arabic and English
+  nameAr: string;
+  nameEn: string;
   description: string;
   logoUrl: string;
   faviconUrl: string;
@@ -34,7 +37,8 @@ export interface PlatformSettings {
 }
 
 const defaultSettings: PlatformSettings = {
-  name: 'أكاديمية هداية',
+  nameAr: 'أكاديمية هداية',
+  nameEn: 'Hedaya Academy',
   description: 'أكاديمية هداية - منصة تعليمية متكاملة لإدارة الكورسات والطلاب والمعلمين',
   logoUrl: '/logo.jpeg',
   faviconUrl: '/logo.jpeg',
@@ -44,7 +48,7 @@ const defaultSettings: PlatformSettings = {
   fontFamily: 'Cairo',
   seo: {
     metaTitle: 'أكاديمية هداية - Hedaya Academy',
-    metaDescription: 'أكاديمية هداية - منصة تعليمية متكاملة لإدارة الكورسات والطلاب والمعلمين',
+    metaDescription: 'أكاديمية هداية - منصة تعليمية متكاملة لإدارة الكورسات وال الطلاب والمعلمين',
     keywords: 'أكاديمية هداية, هداية, تعليم, كورسات, طلاب, معلمين, lms, hedaya',
     ogImage: '/logo1.png',
     robotsIndex: true,
@@ -92,10 +96,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         if (!parsed.faviconUrl || parsed.faviconUrl === '') {
           parsed.faviconUrl = defaultSettings.faviconUrl;
         }
-        if (!parsed.name || parsed.name === 'Neovidia') {
-          parsed.name = defaultSettings.name;
+        if (!parsed.nameAr && parsed.name) {
+          parsed.nameAr = parsed.name;
         }
-        if (!parsed.seo || !parsed.seo.metaTitle || parsed.seo.metaTitle === 'Neovidia') {
+        if (!parsed.nameEn && parsed.name) {
+          parsed.nameEn = parsed.name;
+        }
+        // Remove legacy name field after migration (optional)
+        delete parsed.name;
+        // Ensure nameAr/nameEn have defaults
+        if (!parsed.nameAr) parsed.nameAr = defaultSettings.nameAr;
+        if (!parsed.nameEn) parsed.nameEn = defaultSettings.nameEn;
+        if (!parsed.seo || !parsed.seo.metaTitle || parsed.seo.metaTitle === 'Hedaya') {
           parsed.seo = { ...defaultSettings.seo, ...parsed.seo };
           parsed.seo.metaTitle = defaultSettings.seo.metaTitle;
           parsed.seo.metaDescription = defaultSettings.seo.metaDescription;
@@ -113,11 +125,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, [settings]);
 
   const applyTheme = (s: PlatformSettings) => {
-    const root = document.documentElement;
-    root.style.setProperty('--color-primary', s.primaryColor);
-    root.style.setProperty('--color-primary-dark', adjustColor(s.primaryColor, -20));
-    root.style.setProperty('--color-primary-light', adjustColor(s.primaryColor, 30));
-    root.style.setProperty('--color-accent', s.accentColor);
+  const root = document.documentElement;
+  root.style.setProperty('--color-primary', s.primaryColor);
+  root.style.setProperty('--color-primary-dark', adjustColor(s.primaryColor, -20));
+  root.style.setProperty('--color-primary-light', adjustColor(s.primaryColor, 30));
+  root.style.setProperty('--color-accent', s.accentColor);
 
     const fontMap: Record<string, string> = {
       'Almarai': 'https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap',
@@ -152,7 +164,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       favicon.href = s.faviconUrl;
     }
 
-    document.title = s.seo.metaTitle || s.name;
+    document.title = s.seo.metaTitle || (i18n.language.startsWith('ar') ? s.nameAr : s.nameEn);
   };
 
   const adjustColor = (hex: string, amount: number): string => {

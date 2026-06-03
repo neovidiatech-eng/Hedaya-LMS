@@ -454,7 +454,7 @@ export default function Students() {
             setSelectedStudent(null);
           } catch (error) {
             console.error('Error adding student:', error);
-            // Detailed error is handled by axios interceptor
+            throw error;
           }
         }}
       />
@@ -513,7 +513,7 @@ export default function Students() {
             setSelectedStudent(null);
           } catch (error) {
             console.error('Error updating student:', error);
-            // Detailed error is handled by axios interceptor
+            throw error;
           }
         }}
       />

@@ -36,12 +36,16 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
     },
   });
 
-  const handleOnSubmit = (data: ParentFormData) => {
-    onAdd({
-      ...data,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    onClose();
+  const handleOnSubmit = async (data: ParentFormData) => {
+    try {
+      await onAdd({
+        ...data,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const text = {

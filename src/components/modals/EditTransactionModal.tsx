@@ -61,24 +61,28 @@ export default function EditTransactionModal({ isOpen, onClose, transaction, onS
     setFormData(prev => ({ ...prev, amount: calculated.toFixed(2) }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...transaction,
-      type: formData.type,
-      studentName: formData.studentName,
-      teacherName: formData.teacherName,
-      amount: parseFloat(formData.amount),
-      currency: formData.currency,
-      paymentMethod: formData.paymentMethod,
-      date: formData.date,
-      status: formData.status,
-      notes: formData.notes,
-      sessionCount: parseInt(formData.sessionCount) || undefined,
-      sessionDuration: formData.sessionDuration,
-      ratePerHour: parseFloat(formData.ratePerHour) || undefined
-    });
-    onClose();
+    try {
+      await onSave({
+        ...transaction,
+        type: formData.type,
+        studentName: formData.studentName,
+        teacherName: formData.teacherName,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        paymentMethod: formData.paymentMethod,
+        date: formData.date,
+        status: formData.status,
+        notes: formData.notes,
+        sessionCount: parseInt(formData.sessionCount) || undefined,
+        sessionDuration: formData.sessionDuration,
+        ratePerHour: parseFloat(formData.ratePerHour) || undefined
+      });
+      onClose();
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
   };
 
   return (

@@ -50,9 +50,13 @@ export default function EditStudentModal({
   if (!isOpen || !studentData) return null;
 
 
-  const handleEditSubmit = (data: EditStudentFormData) => {
-    onSubmit({ ...data, id: studentData.id });
-    onClose();
+  const handleEditSubmit = async (data: EditStudentFormData) => {
+    try {
+      await onSubmit({ ...data, id: studentData.id });
+      onClose();
+    } catch (error) {
+      console.error('Submit failed:', error);
+    }
   };
   const uniqueCountryCodes = Array.from(
     new Map(countryCodes.map((c) => [`+${c.phone_code}`, c])).values()

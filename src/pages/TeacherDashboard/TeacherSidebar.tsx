@@ -80,11 +80,14 @@ export default function TeacherSidebar({ isOpen, onClose, isCollapsed, setIsColl
               <img src={settings.logoUrl || "/logo1.png"} alt="logo" className="w-12 h-12 rounded-xl object-contain shrink-0" />
             ) : (
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg text-white font-bold text-xl shrink-0" style={{ background: `linear-gradient(135deg, ${settings.primaryColor}, ${settings.accentColor})` }}>
-                {settings.name?.charAt(0) || "H"}
+                {(i18n.language.startsWith('ar') ? settings.nameAr : settings.nameEn)?.charAt(0) || "H"}
               </div>
             )}
             <div className={`text-right transition-all duration-300 ${isCollapsed ? 'opacity-0 invisible w-0' : 'opacity-100'}`}>
-              <h2 className="text-lg font-bold text-gray-900 line-clamp-1">{settings.name}</h2>
+              <h2 className="text-lg font-bold text-gray-900 line-clamp-1">
+                                                {i18n.language.startsWith('ar') ? settings.nameAr : settings.nameEn}
+                
+              </h2>
               <p className="text-xs text-gray-500">{t('sidebar_dashboard')}</p>
             </div>
           </div>

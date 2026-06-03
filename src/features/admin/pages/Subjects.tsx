@@ -21,8 +21,8 @@ export default function Subjects() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const { data, isLoading, isError, error, isFetching } = useSubjects(debouncedSearch);
-  const { mutate: addSubject } = useAddSubject();
-  const { mutate: updateSubject } = useUpdateSubject();
+  const { mutateAsync: addSubject } = useAddSubject();
+  const { mutateAsync: updateSubject } = useUpdateSubject();
   const { mutate: deleteSubject } = useDeleteSubject();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -41,14 +41,14 @@ export default function Subjects() {
     return s.active === (filterActive === 'active');
   });
 
-  const handleAdd = (formData: SubjectFormData) => {
-    addSubject(formData);
+  const handleAdd = async (formData: SubjectFormData) => {
+    await addSubject(formData);
     setShowAddModal(false);
   };
 
-  const handleEdit = (formData: SubjectFormData) => {
+  const handleEdit = async (formData: SubjectFormData) => {
     if (!editingSubject) return;
-    updateSubject({ id: editingSubject.id, data: formData });
+    await updateSubject({ id: editingSubject.id, data: formData });
     setEditingSubject(null);
   };
 
