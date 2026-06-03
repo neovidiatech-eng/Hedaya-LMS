@@ -9,7 +9,7 @@ import { Teacher } from '../../types/teachers';
 import { useCurrency } from '../../features/admin/hooks/useCurrency';
 import { useSubjects } from '../../features/admin/hooks/useSubjects';
 import { CustomCheckbox } from '../ui/CustomCheckbox';
-import { GetCountries } from 'react-country-state-city';
+import { DEFAULT_COUNTRIES } from '../../consts/countries';
 
 interface EditTeacherModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ interface EditTeacherModalProps {
 export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }: EditTeacherModalProps) {
   const { language, t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
-  const [countryCodes, setCountryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]);
+  const [countryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>(DEFAULT_COUNTRIES);
   const { data: currenciesData } = useCurrency();
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
 
@@ -65,22 +65,15 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
     }
   }, [teacher, reset]);
 
-  useEffect(() => {
-    GetCountries()
-      .then((data) => {
-        if (data?.length) setCountryCodes(data);
-      })
-      .catch(() => setCountryCodes([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]));
-  }, []);
-
   const handleOnSubmit = async (data: TeacherFormData) => {
-    try {
-      await onSubmit(data);
-      onClose();
-    } catch (error) {
-      console.error('Submit failed:', error);
-    }
-  };
+  try {
+    await onSubmit(data);
+    onClose();
+  } catch (error) {
+    console.error('Submission error:', error);
+    // Do not close on error
+  }
+};
 
   if (!isOpen || !teacher) return null;
   const subjectsValue = watch('subjects') || [];
@@ -92,7 +85,12 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
       setValue('subjects', subjectsValue.filter(s => s !== id), { shouldValidate: true });
     }
   };
-
+const handleClose = () => {
+  // Close modal only if there are no validation errors
+  if (Object.keys(errors).length === 0) {
+    onClose();
+  }
+};
   const genders = [
     { id: 'male', label: 'ذكر', labelEn: 'Male' },
     { id: 'female', label: 'أنثى', labelEn: 'Female' },
@@ -128,7 +126,7 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
             <Users className="w-6 h-6" />
             <span>{t('editTeacher')}</span>
           </h2>
-          <button type="button" onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <button type="button" onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/80" />
           </button>
         </div>
@@ -335,7 +333,7 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
           <div className="bg-gray-50 px-6 py-4 flex items-center gap-3 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium bg-white"
             >
               {t('cancel')}

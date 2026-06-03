@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import { X, Eye, EyeOff, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { X, Eye, EyeOff, Lock, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from '../ui/CustomSelect';
 import { Controller, useForm } from 'react-hook-form';
 import { UserFormData, getUserSchema } from '../../lib/schemas/UserSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRoles } from '../../features/admin/hooks/useRoles';
-import { GetCountries } from 'react-country-state-city';
+import { DEFAULT_COUNTRIES } from '../../consts/countries';
 // import { CustomCheckbox } from '../ui/CustomCheckbox';
 //import { usePermissions } from '../../hooks/usePermissions';
 
@@ -26,24 +26,14 @@ interface AddUserModalProps {
 
 // Static permission list removed in favor of dynamic fetching
 
-const fallbackPhoneCodes = [{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }];
-
-
-
 export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
   const { language, t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
-  const [countryCodes, setCountryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>(fallbackPhoneCodes);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [countryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>(DEFAULT_COUNTRIES);
   const { data: rolesData } = useRoles();
   const dynamicRoles = rolesData?.data || [];
-
-  useEffect(() => {
-    GetCountries()
-      .then((data) => {
-        if (data?.length) setCountryCodes(data);
-      })
-      .catch(() => setCountryCodes(fallbackPhoneCodes));
-  }, []);
 
 
   // const { data: permsData } = usePermissions();
@@ -83,6 +73,8 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
   if (!isOpen) return null;
 
   const onFormSubmit = async (data: UserFormData) => {
+    setError(null);
+    setIsLoading(true);
     try {
       await onSubmit({
         ...data,
@@ -90,14 +82,19 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
       });
       reset();
       onClose();
-    } catch (error) {
-      console.error('Submit failed:', error);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const uniqueCountryCodes = Array.from(
     new Map(countryCodes.map((c) => [`+${c.phone_code}`, c])).values()
   );
+
+
   const displayNames = new Intl.DisplayNames([language === 'ar' ? 'ar' : 'en'], { type: 'region' });
 
   const countryOptions = uniqueCountryCodes.map((c) => ({
@@ -141,6 +138,15 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
         {/* Body */}
         <form id="add-user-form" onSubmit={handleSubmit(onFormSubmit)} className="flex-1  overflow-y-auto no-scrollbar p-6">
           <div className="space-y-6">
+            {/* Error Alert */}
+            {error && (
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-800">{error}</p>
+                </div>
+              </div>
+            )}
             {/* Name and Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -303,16 +309,18 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium"
+            disabled={isLoading}
+            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('cancel')}
           </button>
           <button
             type="submit"
             form="add-user-form"
-            className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-lg shadow-blue-600/30"
+            disabled={isLoading}
+            className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('save')}
+            {isLoading ? `${t('save')}...` : t('save')}
           </button>
         </div>
       </div>

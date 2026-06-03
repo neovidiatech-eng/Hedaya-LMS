@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, User, Mail, Phone, Lock, Users, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, Phone, Lock, Users, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, Controller, Resolver } from 'react-hook-form';
 import { ParentFormData, getParentSchema } from '../../lib/schemas/ParentSchema';
@@ -16,6 +16,8 @@ interface AddParentModalProps {
 export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) {
   const { language, t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { data: studentsData } = useStudents();
 
   const studentOptions = (studentsData?.data?.studentsData || []).map((s) => ({
@@ -37,14 +39,21 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
   });
 
   const handleOnSubmit = async (data: ParentFormData) => {
+    setError(null);
+    setIsLoading(true);
     try {
       await onAdd({
         ...data,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
+      reset();
       onClose();
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
       console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,6 +83,16 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
 
         <form onSubmit={handleSubmit(handleOnSubmit)} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Error Alert */}
+            {error && (
+              <div className="md:col-span-2 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-800">{error}</p>
+                </div>
+              </div>
+            )}
 
             {/* الاسم */}
             <div className="md:col-span-2">
@@ -164,11 +183,20 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
           </div>
 
           <div className="flex gap-3 mt-8">
-            <button type="button" onClick={onClose} className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">
+            <button 
+              type="button" 
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {text.cancel[language]}
             </button>
-            <button type="submit" className="flex-1 px-6 py-3 bg-primary text-white rounded-xl bg-primary/80 transition-colors font-medium shadow-lg">
-              {text.save[language]}
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 px-6 py-3 bg-primary text-white rounded-xl bg-primary/80 transition-colors font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? `${text.save[language]}...` : text.save[language]}
             </button>
           </div>
         </form>

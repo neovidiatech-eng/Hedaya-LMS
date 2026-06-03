@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { X, Users, Eye, EyeOff, Lock } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from '../ui/CustomSelect';
@@ -9,7 +9,7 @@ import { CustomCheckbox } from '../ui/CustomCheckbox';
 import { useCurrency } from '../../features/admin/hooks/useCurrency';
 import { useMemo } from 'react';
 import { useSubjects } from '../../features/admin/hooks/useSubjects';
-import { GetCountries } from 'react-country-state-city';
+import { DEFAULT_COUNTRIES } from '../../consts/countries';
 
 interface AddTeacherModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ interface AddTeacherModalProps {
 export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeacherModalProps) {
   const { language, t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
-  const [countryCodes, setCountryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]);
+  const [countryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>(DEFAULT_COUNTRIES);
   const { data: currenciesData } = useCurrency();
   const { data: subjectsData, isLoading: isLoadingSubjects, error, isError } = useSubjects();
 
@@ -31,7 +31,7 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
       name: '',
       email: '',
       phone: '',
-      phone_code: '',
+      phone_code: '+20',
       password: '',
       hourlyRate: 0,
       currency: '',
@@ -50,24 +50,24 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
     }));
   }, [currenciesData, language]);
 
-  useEffect(() => {
-    GetCountries()
-      .then((data) => {
-        if (data?.length) setCountryCodes(data);
-      })
-      .catch(() => setCountryCodes([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]));
-  }, []);
+
+
+  const handleClose = () => {
+    // Close modal only if there are no validation errors
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
 
   const handleOnSubmit = async (data: TeacherFormData) => {
     try {
-      await onSubmit({
-        ...data,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
+      await onSubmit(data);
+      // Close after successful submit
       onClose();
       reset();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error('Submission error:', error);
+      // Do not close or reset on error
     }
   };
 
@@ -121,7 +121,7 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
             <Users className="w-6 h-6" />
             <span>{t('addTeacher')}</span>
           </h2>
-          <button type="button" onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <button type="button" onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/80" />
           </button>
         </div>
@@ -274,17 +274,17 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
             </div>
 
             {/* Row 5: Zoom Link */}
-          <div className="grid grid-cols-1 md:grid-cols-1">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t('zoomLink')}
-          </label>
-          <input
-            type="text"
-            placeholder="https://zoom.us/j/123456789"
-            {...register('meeting_link')}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-start"
-          />
-          {errors.meeting_link && <p className="text-red-500 text-xs mt-1">{errors.meeting_link.message}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('zoomLink')}
+              </label>
+              <input
+                type="text"
+                placeholder="https://zoom.us/j/123456789"
+                {...register('meeting_link')}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-start"
+              />
+              {errors.meeting_link && <p className="text-red-500 text-xs mt-1">{errors.meeting_link.message}</p>}
             </div>
 
             {/* Subjects */}
@@ -324,7 +324,7 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
           <div className="bg-gray-50 px-6 py-4 flex items-center gap-3 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium bg-white"
             >
               {t('cancel')}

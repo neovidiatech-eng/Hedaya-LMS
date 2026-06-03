@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X, GraduationCap, Eye, EyeOff, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { X, GraduationCap, Eye, EyeOff, Lock, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from '../ui/CustomSelect';
 import DatePickerField from '../ui/DatePickerField';
@@ -8,7 +8,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePlans } from '../../features/admin/hooks/usePlans';
 import { Plan } from '../../types/plan';
-import { GetCountries } from 'react-country-state-city';
+import { DEFAULT_COUNTRIES } from '../../consts/countries';
 
 interface AddStudentModalProps {
   isOpen: boolean;
@@ -19,7 +19,9 @@ interface AddStudentModalProps {
 export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalProps) {
   const { language, t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
-  const [countryCodes, setCountryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [countryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>(DEFAULT_COUNTRIES);
   const { data: plansData } = usePlans();
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<StudentFormData>({
     resolver: zodResolver(getStudentSchema(t)),
@@ -32,25 +34,22 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
     }
   });
   const onFormSubmit = async (data: StudentFormData) => {
+    setError(null);
+    setIsLoading(true);
     try {
       await onSubmit({
         ...data,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        //timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       reset();
       onClose();
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    GetCountries()
-      .then((data) => {
-        if (data?.length) setCountryCodes(data);
-      })
-      .catch(() => setCountryCodes([{ name: 'Egypt', phone_code: '20', emoji: '🇪🇬', iso2: 'EG' }]));
-  }, []);
 
   if (!isOpen) return null;
 
@@ -87,7 +86,12 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
   const uniqueCountryCodes = Array.from(
     new Map(countryCodes.map((c) => [`+${c.phone_code}`, c])).values()
   );
+
+
+  console.log('Unique Country Codes:', uniqueCountryCodes);
   const displayNames = new Intl.DisplayNames([language === 'ar' ? 'ar' : 'en'], { type: 'region' });
+
+
 
   const countryCodeOptions = uniqueCountryCodes.map((c) => ({
     value: `+${c.phone_code}`,
@@ -118,6 +122,15 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
         {/* Form */}
         <form onSubmit={handleSubmit(onFormSubmit)} className="p-6">
           <div className="space-y-6">
+            {/* Error Alert */}
+            {error && (
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-800">{error}</p>
+                </div>
+              </div>
+            )}
             {/* Row 1: Name and Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="text-start">
@@ -280,12 +293,17 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+              disabled={isLoading}
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('cancel')}
             </button>
-            <button type="submit" className="flex-1 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-700 transition-colors font-medium">
-              {t('save')}
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? `${t('save')}...` : t('save')}
             </button>
           </div>
         </form>
