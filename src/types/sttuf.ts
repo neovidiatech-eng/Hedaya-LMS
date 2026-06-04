@@ -53,10 +53,9 @@ export interface CreateStaffPayload {
     name: string;
     email: string;
     password: string;
-    codeCountry: string;
+    code_country: string;
     phone: string;
     roleId: string;
-    timezone?: string;
 }
 
 export interface UpdateStaffPayload extends Partial<CreateStaffPayload> {

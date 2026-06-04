@@ -60,10 +60,9 @@ export default function Users() {
         name: userData.name,
         email: userData.email,
         password: userData.password,
-        codeCountry: userData.countryCode,
+        code_country: userData.countryCode,
         phone: userData.phone,
         roleId: userData.role,
-        timezone: userData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       setIsAddModalOpen(false);
     } catch (error) {
@@ -79,10 +78,9 @@ export default function Users() {
         staff: {
           name: userData.name,
           email: userData.email,
-          codeCountry: userData.countryCode,
+          code_country: userData.countryCode,
           phone: userData.phone,
           roleId: userData.role,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           ...(userData.password ? { password: userData.password } : {}),
         },
       });
