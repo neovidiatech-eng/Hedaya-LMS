@@ -62,6 +62,16 @@ export default function EditStudentModal({
 
   const displayNames = new Intl.DisplayNames([language === 'ar' ? 'ar' : 'en'], { type: 'region' });
 
+  const countryOptions = DEFAULT_COUNTRIES.map((country) => ({
+  value: country.iso2,
+  label: (
+    <div className="flex items-center gap-2">
+      <span>{country.emoji}</span>
+      <span>{displayNames.of(country.iso2) || country.name}</span>
+    </div>
+  ),
+}));
+
   const countryCodeOptions = uniqueCountryCodes.map((c) => ({
     value: `+${c.phone_code}`,
     label: (
@@ -77,10 +87,6 @@ export default function EditStudentModal({
     { value: 'female', label: language === 'ar' ? 'أنثى' : 'Female' },
   ];
 
-  const countryOptions = [
-    { value: 'egypt', label: language === 'ar' ? 'مصر' : 'Egypt' },
-    { value: 'saudi', label: language === 'ar' ? 'السعودية' : 'Saudi Arabia' },
-  ];
 
   const planOptions = [
     ...(plansData || []).map((p: any) => ({
