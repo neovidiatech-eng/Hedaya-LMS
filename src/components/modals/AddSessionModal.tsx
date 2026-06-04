@@ -122,6 +122,12 @@ export default function AddSessionModal({
     },
   });
 
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+
   const watchTitle = watch('title');
   const watchSubject = watch('subject');
   const watchStudent = watch('student');
@@ -342,10 +348,11 @@ export default function AddSessionModal({
         await onAdd(batchData);
       }
 
-      reset();
       onClose();
+      reset();
     } catch (e) {
       console.error(e);
+      // keep modal open
     }
   };
 
@@ -374,7 +381,7 @@ export default function AddSessionModal({
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-full hover:bg-gray-100 transition"
           >
             <X className="w-5 h-5 text-gray-500" />
@@ -614,7 +621,7 @@ export default function AddSessionModal({
 
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 className="secondary-btn"
               >
                 Cancel

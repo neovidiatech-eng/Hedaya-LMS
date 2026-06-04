@@ -68,6 +68,12 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
       permissions: [],
     } as UserFormData
   });
+
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
   if (!isOpen) return null;
 
   if (!isOpen) return null;
@@ -80,8 +86,8 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
         ...data,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
-      reset();
       onClose();
+      reset();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
       setError(errorMessage);
@@ -128,7 +134,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
 
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <X className="w-6 h-6 text-white/80" />
@@ -308,7 +314,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isLoading}
             className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >

@@ -95,6 +95,12 @@ export default function EditSubscriptionModal({
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+
   const onSubmitForm = async (data: EditSubscriptionFormData) => {
     try {
       setIsSaving(true);
@@ -125,7 +131,7 @@ export default function EditSubscriptionModal({
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
           <h2 className="text-2xl font-bold text-gray-900">{text.title[language]}</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-6 h-6 text-gray-500" />
@@ -287,7 +293,7 @@ export default function EditSubscriptionModal({
           <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
             >
               {text.cancel[language]}

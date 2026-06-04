@@ -104,6 +104,12 @@ export default function AddExamModal({
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+
   return (
     <div className="fixed inset-0  !mt-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto no-scrollbar">
@@ -119,7 +125,7 @@ export default function AddExamModal({
           </h2>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-6 h-6 text-white" />
@@ -258,7 +264,7 @@ export default function AddExamModal({
           <div className="flex gap-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
             >
               {text.cancel[language]}

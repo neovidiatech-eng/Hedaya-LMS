@@ -252,14 +252,16 @@ export default function AddRoleModal({
 
 
     const handleClose = () => {
-        reset();
-        onClose();
+        if (Object.keys(errors).length === 0) {
+            onClose();
+        }
     };
 
     const onFormSubmit = async (data: RoleFormData) => {
         try {
             await onSubmit(data);
-            reset();
+            onClose();
+            if (!isEdit) reset();
         } catch (e) {
             console.error(e);
         }

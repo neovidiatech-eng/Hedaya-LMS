@@ -38,6 +38,12 @@ export default function AddExpenseModal({ isOpen, onClose, onSave, initialData }
     }
   });
 
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+
   const text = {
     title: { ar: initialData ? 'تعديل المصروف' : 'إضافة مصروف جديد', en: initialData ? 'Edit Expense' : 'Add New Expense' },
     expenseTitle: { ar: 'عنوان المصروف', en: 'Expense Title' },
@@ -92,6 +98,8 @@ export default function AddExpenseModal({ isOpen, onClose, onSave, initialData }
   const onSubmit = async (data: ExpenseFormData) => {
     try {
       await onSave(data);
+      onClose();
+      reset();
     } catch (e) {
       console.error(e);
     }
@@ -103,7 +111,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSave, initialData }
         <div className="bg-gray-50 border-b border-gray-100 px-8 py-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">{text.title[language]}</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-10 h-10 flex items-center justify-center hover:bg-gray-200 rounded-xl transition-colors"
           >
             <X className="w-6 h-6 text-gray-500" />
@@ -248,7 +256,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSave, initialData }
           <div className="flex gap-4 pt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 h-14 rounded-2xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all"
             >
               {text.cancel[language]}

@@ -41,10 +41,18 @@ export default function EditStudentModal({
 
   if (!isOpen || !studentData) return null;
 
-
-  const handleEditSubmit = (data: EditStudentFormData) => {
-    onSubmit({ ...data, id: studentData.id });
-    onClose();
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+  const handleEditSubmit = async (data: EditStudentFormData) => {
+    try {
+      await onSubmit({ ...data, id: studentData.id });
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
   };
   const uniqueCountryCodes = Array.from(
     new Map(countryCodes.map((c) => [`+${c.phone_code}`, c])).values()
@@ -96,7 +104,7 @@ export default function EditStudentModal({
             <GraduationCap className="w-6 h-6" />
             <span>{t('editStudent')}</span>
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/80" />
           </button>
         </div>
@@ -211,7 +219,7 @@ export default function EditStudentModal({
           />
 
           <div className="flex gap-3 mt-8 pt-6 border-t">
-            <button type="button" onClick={onClose} className="flex-1 py-3 border border-gray-300 rounded-xl hover:bg-gray-50">{t('cancel')}</button>
+            <button type="button" onClick={handleClose} className="flex-1 py-3 border border-gray-300 rounded-xl hover:bg-gray-50">{t('cancel')}</button>
             <button type="submit" className="flex-1 py-3 bg-primary text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-blue-200">
               {t('save')}
             </button>

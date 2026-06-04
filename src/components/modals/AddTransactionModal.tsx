@@ -35,6 +35,12 @@ export default function AddTransactionModal({ isOpen, onClose, onSave, currencie
       sessionDuration: 60
     }
   });
+
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
   const watchType = watch('type');
   const watchSessionCount = watch('sessionCount');
   const watchSessionDuration = watch('sessionDuration');
@@ -104,8 +110,10 @@ export default function AddTransactionModal({ isOpen, onClose, onSave, currencie
         await onSave(data);
       }
       onClose();
+      if (!editingTransaction) reset();
     } catch (error) {
       console.error('Save failed:', error);
+      // keep modal open
     }
   };
   if (!isOpen) return null;
@@ -115,7 +123,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSave, currencie
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh]  overflow-y-auto no-scrollbar" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <div className="sticky top-0 bg-primary border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <h2 className="text-xl font-bold text-white">{text.title[language]}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-lg">
             <X className="w-5 h-5 text-white" />
           </button>
         </div>
@@ -265,7 +273,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSave, currencie
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
             >
               {text.cancel[language]}

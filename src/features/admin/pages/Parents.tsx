@@ -53,7 +53,8 @@ const parents = parentsData?.data?.parents || [];
       message.success(language === 'ar' ? 'تم إضافة ولي الأمر بنجاح' : 'Parent added successfully');
       setShowAddModal(false);
     } catch (error: any) {
-      message.error(error.response?.data?.message || (language === 'ar' ? 'حدث خطأ أثناء إضافة ولي الأمر' : 'Failed to add parent'));
+      console.error('Error adding parent:', error);
+      throw error;
     }
   };
 

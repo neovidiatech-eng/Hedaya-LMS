@@ -49,6 +49,12 @@ export default function AddMultipleSessionsModal({ isOpen, onClose, onAdd }: Add
     }
   });
 
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+
   const watchedStudent = watch('student');
   const watchedTeacher = watch('teacher');
   const watchedMonthYear = watch('monthYear');
@@ -147,11 +153,12 @@ export default function AddMultipleSessionsModal({ isOpen, onClose, onAdd }: Add
         sessions: sessionPreview,
         selectedDays
       });
+      onClose();
       reset();
       setWeekDays(prev => prev.map(d => ({ ...d, checked: false })));
-      onClose();
     } catch (e) {
       console.error(e);
+      // keep modal open
     }
   };
 
@@ -163,7 +170,7 @@ export default function AddMultipleSessionsModal({ isOpen, onClose, onAdd }: Add
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh]  overflow-y-auto no-scrollbar">
         <div className="sticky top-0 bg-primary px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
           <h2 className="text-2xl font-bold text-white">{t('addMultipleSessions_title')}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg"><X className="text-white/80" /></button>
+          <button onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg"><X className="text-white/80" /></button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
@@ -386,7 +393,7 @@ export default function AddMultipleSessionsModal({ isOpen, onClose, onAdd }: Add
 
           <div className="flex gap-3 pt-4">
             <button type="submit" className="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:opacity-90">{t('add')}</button>
-            <button type="button" onClick={onClose} className="flex-1 py-3 border border-gray-200 rounded-xl font-bold">{t('cancel')}</button>
+            <button type="button" onClick={handleClose} className="flex-1 py-3 border border-gray-200 rounded-xl font-bold">{t('cancel')}</button>
           </div>
         </form>
       </div>

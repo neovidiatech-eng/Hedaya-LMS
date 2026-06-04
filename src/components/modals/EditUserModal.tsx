@@ -60,13 +60,23 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
 
   if (!isOpen) return null;
 
-  const onFormSubmit = (data: UserFormData) => {
-    onSubmit({
-      ...data,
-      id: userData.id,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    onClose();
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
+
+  const onFormSubmit = async (data: UserFormData) => {
+    try {
+      await onSubmit({
+        ...data,
+        id: userData.id,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const uniqueCountryCodes = Array.from(
@@ -104,7 +114,7 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
             {t('editUser')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <X className="w-6 h-6 text-white/80" />
@@ -271,7 +281,7 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium"
           >
             {t('cancel')}

@@ -48,6 +48,10 @@ export default function AddAssignmentModal({ isOpen, onClose, initialData }: Add
     },
   });
 
+  const handleClose = () => {
+    onClose();
+  };
+
   const text = {
     title: { ar: initialData ? 'تعديل الواجب' : 'إضافة واجب جديد', en: initialData ? 'Edit Assignment' : 'Add New Assignment' },
     student: { ar: 'اختر الطالب', en: 'Select Student' },
@@ -88,19 +92,17 @@ export default function AddAssignmentModal({ isOpen, onClose, initialData }: Add
     }
   }, [initialData, reset, isOpen]);
 
-  const handleOnSubmit = (data: AssignmentFormData) => {
-    if (initialData) {
-      updateMutation.mutate({ id: initialData.id, ...data } as any, {
-        onSuccess: () => {
-          onClose();
-        }
-      });
-    } else {
-      createMutation.mutate(data, {
-        onSuccess: () => {
-          onClose();
-        }
-      });
+  const handleOnSubmit = async (data: AssignmentFormData) => {
+    try {
+      if (initialData) {
+        await updateMutation.mutateAsync({ id: initialData.id, ...data } as any);
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      onClose();
+    } catch (err) {
+      console.error('Submission error:', err);
+      // keep modal open, preserve form values
     }
   };
 
@@ -112,7 +114,7 @@ export default function AddAssignmentModal({ isOpen, onClose, initialData }: Add
         <div className="sticky top-0 bg-primary border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <h2 className="text-2xl font-bold text-white">{text.title[language]}</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <X className="w-6 h-6 text-white" />
@@ -196,7 +198,7 @@ export default function AddAssignmentModal({ isOpen, onClose, initialData }: Add
           <div className="flex gap-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={createMutation.isPending || updateMutation.isPending}
               className="flex-1 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
             >

@@ -34,6 +34,12 @@ export default function AddCurrencyModal({ isOpen, onClose, onSave, initialData 
       exchangeRate: 1
     }
   });
+
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
   /* 
     const isDefault = watch('default');
    */
@@ -92,7 +98,7 @@ export default function AddCurrencyModal({ isOpen, onClose, onSave, initialData 
           <h2 className="text-2xl font-bold text-white">
             {initialData ? text.editTitle[language] : text.title[language]}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
@@ -224,7 +230,7 @@ export default function AddCurrencyModal({ isOpen, onClose, onSave, initialData 
           <div className="flex gap-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
               {text.cancel[language]}

@@ -36,6 +36,12 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
     },
 
   });
+
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
   const features = watch('features');
   const addFeature = () => {
     setValue('features', [...features, '']);
@@ -120,10 +126,13 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
         ...data,
         id: initialData?.id
       });
-      reset();
       onClose();
+      if (!initialData) {
+        reset();
+      }
     } catch (e) {
       console.error(e);
+      // keep modal open
     }
   };
 
@@ -135,7 +144,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh]  overflow-y-auto no-scrollbar" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <div className="sticky top-0 bg-primary border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <h2 className="text-2xl font-bold text-white">{text.title[language]}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
@@ -361,7 +370,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
 
           {/* Actions */}
           <div className="flex gap-3 justify-end pt-4 border-t">
-            <button type="button" onClick={onClose} className="px-6 py-2.5 bg-gray-200 rounded-lg">
+            <button type="button" onClick={handleClose} className="px-6 py-2.5 bg-gray-200 rounded-lg">
               {text.cancel[language]}
             </button>
 

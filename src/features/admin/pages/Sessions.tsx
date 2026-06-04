@@ -131,6 +131,7 @@ export default function Sessions() {
       setShowAddModal(false);
     } catch (error) {
       console.error("Add session failed:", error);
+      throw error;
     }
   };
 

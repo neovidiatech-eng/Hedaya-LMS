@@ -24,8 +24,9 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
     value: s.id,
     label: s.user.name,
   }));
+  
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<ParentFormData>({
+  const { register, handleSubmit,reset, control, formState: { errors } } = useForm<ParentFormData>({
     resolver: zodResolver(getParentSchema(t)) as Resolver<ParentFormData>,
     defaultValues: {
       name: '',
@@ -38,24 +39,33 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
     },
   });
 
-  const handleOnSubmit = async (data: ParentFormData) => {
-    setError(null);
-    setIsLoading(true);
-    try {
-      await onAdd({
-        ...data,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
-      reset();
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
       onClose();
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : 'An error occurred. Please try again.';
-      setError(errorMessage);
-      console.error(e);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+const handleOnSubmit = async (data: ParentFormData) => {
+  setError(null);
+  setIsLoading(true);
+
+  try {
+    await onAdd({
+      ...data,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
+
+    reset();      // بعد النجاح فقط
+  } catch (e) {
+    setError(
+      e instanceof Error
+        ? e.message
+        : 'An error occurred. Please try again.'
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const text = {
     title: { ar: 'إضافة ولي أمر جديد', en: 'Add New Parent' },
@@ -76,7 +86,7 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh]  overflow-y-auto no-scrollbar">
         <div className="sticky top-0 bg-primary px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
           <h2 className="text-2xl font-bold text-white">{text.title[language]}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white" />
           </button>
         </div>
@@ -185,7 +195,7 @@ export default function AddParentModal({ onClose, onAdd }: AddParentModalProps) 
           <div className="flex gap-3 mt-8">
             <button 
               type="button" 
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
               className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >

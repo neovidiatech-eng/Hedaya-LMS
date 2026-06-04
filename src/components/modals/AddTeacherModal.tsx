@@ -62,8 +62,8 @@ export default function AddTeacherModal({ isOpen, onClose, onSubmit }: AddTeache
   const handleOnSubmit = async (data: TeacherFormData) => {
     try {
       await onSubmit(data);
-      // Close after successful submit
-      onClose();
+      // // Close after successful submit
+      // onClose();
       reset();
     } catch (error) {
       console.error('Submission error:', error);

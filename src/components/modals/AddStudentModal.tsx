@@ -33,6 +33,12 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
       country: 'مصر'
     }
   });
+
+  const handleClose = () => {
+    if (Object.keys(errors).length === 0) {
+      onClose();
+    }
+  };
   const onFormSubmit = async (data: StudentFormData) => {
     setError(null);
     setIsLoading(true);
@@ -41,8 +47,8 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
         ...data,
         //timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
-      reset();
       onClose();
+      reset();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
       setError(errorMessage);
@@ -114,7 +120,7 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
             <GraduationCap className="w-6 h-6" />
             <span>{t('addNewStudent')}</span>
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/80" />
           </button>
         </div>
@@ -292,7 +298,7 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit }: AddStuden
           <div className="flex items-center gap-3 mt-8 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
