@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Eye,
   EyeOff,
@@ -205,7 +205,7 @@ const countryCodes = Array.from(
                     <Select
                       {...field}
                       options={countryCodes}
-                      className="h-12 w-44 text-slate-600 font-medium"
+                      className="h-12 text-slate-600 font-medium"
                     />
                   )}
                 />
