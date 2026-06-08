@@ -596,5 +596,6 @@
   "confirm_delete_course": "Are you sure you want to delete this course?",
   "ActivityLogs": "Activity Logs",
   "noLogs": "No logs for now",
-  "logs": "Logs"
+  "logs": "Logs",
+  "renewSubscription":"Renew Subscription"
 }

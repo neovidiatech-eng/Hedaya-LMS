@@ -11,6 +11,7 @@ import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } fro
 import { Student } from '../../../types/student';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
+import { usePlans } from '../hooks/usePlans';
 
 const AddStudentModal = lazy(() => import('../../../components/modals/AddStudentModal'));
 const ViewStudentModal = lazy(() => import('../../../components/modals/ViewStudentModal'));
@@ -51,6 +52,9 @@ export default function Students() {
   }), [currentPage, itemsPerPage, debouncedSearch, selectedCountry, selectedGrade]);
 
   const { data: apiResponse, isLoading } = useStudents(studentsQueryParams);
+  const {data: plansData} = usePlans();
+
+  const plans = plansData?.length;
 
   const rawData: any = apiResponse?.data.studentsData;
   const studentsList: Student[] = Array.isArray(rawData) ? rawData : (rawData?.students || rawData?.data || []);
@@ -75,7 +79,7 @@ export default function Students() {
     {
       id: 'active',
       label: t('activeStudents'),
-      value: studentsList.filter(student => student.status === 'approved').length,
+      value: studentsList.filter(student => student.active === true).length,
       icon: UserCheck,
       bgColor: 'bg-green-50',
       iconColor: 'text-green-600',
@@ -93,7 +97,7 @@ export default function Students() {
     {
       id: 'plans',
       label: t('numberOfPlans'),
-      value: 3,
+      value: plans,
       icon: ClipboardList,
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-600',
