@@ -423,7 +423,7 @@
   "packageName": "الباقة",
   "sessionsRemaining": "الحصص المتبقية",
   "scheduledDays": "أيام الحصة",
-  "pendingStudents": "الطلاب المعلقين",
+  "pendingStudents": "الطلاب الغير نشيطين",
   "grid": "شبكة",
   "list": "قائمة",
   "studentInfo": "معلومات الطالب",

@@ -61,6 +61,9 @@ export default function Students() {
   const pagination = apiResponse?.data?.pagination;
   const totalItems = pagination?.totalItems ?? 0;
   const totalPages = pagination?.totalPages ?? 1;
+  const activeCount = apiResponse?.data?.activeCount ?? 0;
+  const inactiveCount = apiResponse?.data?.inactiveCount ?? 0;
+
   const { mutateAsync: createStudent } = useCreateStudent();
   const { mutateAsync: updateStudent } = useUpdateStudent();
   const { mutateAsync: deleteStudent } = useDeleteStudent();
@@ -79,16 +82,16 @@ export default function Students() {
     {
       id: 'active',
       label: t('activeStudents'),
-      value: studentsList.filter(student => student.active === true).length,
+      value: activeCount,
       icon: UserCheck,
       bgColor: 'bg-green-50',
       iconColor: 'text-green-600',
       valueColor: 'text-green-600',
     },
     {
-      id: 'pending',
+      id: 'inactive',
       label: t('pendingStudents'),
-      value: studentsList.filter(student => student.status === 'pending').length,
+      value: inactiveCount,
       icon: UserX,
       bgColor: 'bg-orange-50',
       iconColor: 'text-orange-600',
