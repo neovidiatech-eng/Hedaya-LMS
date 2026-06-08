@@ -42,7 +42,7 @@ import { TeacherSubject } from '../../types/teachers';
 interface AddSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (data: any) => void;
+  onAdd: (data: any) => Promise<void>;
 }
 
 const DAYS: DayOfWeek[] = [
@@ -121,12 +121,6 @@ export default function AddSessionModal({
       language: language === 'ar' ? 'ar' : 'en',
     },
   });
-
-  const handleClose = () => {
-    if (Object.keys(errors).length === 0) {
-      onClose();
-    }
-  };
 
   const watchTitle = watch('title');
   const watchSubject = watch('subject');
@@ -285,9 +279,10 @@ export default function AddSessionModal({
     !!selectedStudentData && requestedSessionsCount > remainingSessions;
 
   const sessionsLimitMessage = sessionsExceedRemaining
-    ? language === 'ar'
-      ? `عدد الحصص المختارة ${requestedSessionsCount} أكبر من المتبقي للطالب. المتبقي ${remainingSessions} حصة فقط.`
-      : `Selected sessions (${requestedSessionsCount}) exceed the student's remaining sessions. Remaining: ${remainingSessions}.`
+    ? t('addSession_sessionsLimitMessage', {
+        requestedSessionsCount,
+        remainingSessions,
+      })
     : '';
 
   useEffect(() => {
@@ -297,7 +292,7 @@ export default function AddSessionModal({
   const formatDateCard = (date: string) => {
     if (!date) {
       return {
-        month: 'N/A',
+        month: '-',
         day: 0,
       };
     }
@@ -306,14 +301,14 @@ export default function AddSessionModal({
     const [year, month, day] = datePart.split('-').map(Number);
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
       return {
-        month: 'N/A',
+        month: '-',
         day: 0,
       };
     }
     const d = new Date(year, month - 1, day);
 
     return {
-      month: d.toLocaleDateString('en-US', {
+      month: d.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
         month: 'short',
       }),
       day: d.getDate(),
@@ -326,34 +321,30 @@ export default function AddSessionModal({
       return;
     }
 
-    try {
-      if (schedulingMode === 'single') {
-        await onAdd(data as SessionFormData);
-      } else {
-        const batchData: MultipleSessionsPayload = {
-          formData: data as MultipleSessionsFormData,
-          selectedDays: watchSelectedDays,
-          sessions: previewSessions.map((session) => ({
-            date: session.date,
-            day: new Date(session.date + 'T00:00:00').toLocaleDateString(
-              'en-US',
-              {
-                weekday: 'long',
-              }
-            ) as DayOfWeek,
-            time: data.startTime,
-          })),
-        };
+    if (schedulingMode === 'single') {
+      await onAdd(data as SessionFormData);
+    } else {
+      const batchData: MultipleSessionsPayload = {
+        formData: data as MultipleSessionsFormData,
+        selectedDays: watchSelectedDays,
+        sessions: previewSessions.map((session) => ({
+          date: session.date,
+          day: new Date(session.date + 'T00:00:00').toLocaleDateString(
+            'en-US',
+            {
+              weekday: 'long',
+            }
+          ) as DayOfWeek,
+          time: data.startTime,
+        })),
+      };
 
-        await onAdd(batchData);
-      }
-
-      onClose();
-      reset();
-    } catch (e) {
-      console.error(e);
-      // keep modal open
+      await onAdd(batchData);
     }
+
+    reset();
+
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -365,23 +356,23 @@ export default function AddSessionModal({
         {/* Header */}
         <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center">
               <Calendar className="w-6 h-6 text-indigo-600" />
             </div>
 
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                Create New Session
+                {t('addSingleSession_title')}
               </h2>
 
               <p className="text-sm text-gray-400">
-                Configure and schedule sessions.
+                {t('addSession_subtitle')}
               </p>
             </div>
           </div>
 
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="p-2 rounded-full hover:bg-gray-100 transition"
           >
             <X className="w-5 h-5 text-gray-500" />
@@ -547,7 +538,7 @@ export default function AddSessionModal({
               <div>
                 <label className="label">
                   <Layers className="w-3.5 h-3.5" />
-                  Language
+                  {t('language')}
                 </label>
 
                 <Controller
@@ -556,8 +547,8 @@ export default function AddSessionModal({
                   render={({ field }) => (
                     <CustomSelect
                       options={[
-                        { value: 'en', label: 'English' },
-                        { value: 'ar', label: 'Arabic' },
+                        { value: 'en', label: t('english') },
+                        { value: 'ar', label: t('arabic') },
                       ]}
                       value={field.value}
                       onChange={field.onChange}
@@ -604,12 +595,12 @@ export default function AddSessionModal({
             <div className="mb-6">
               <label className="label">
                 <AlertTriangle className="w-3.5 h-3.5" />
-                Notes
+                {t('notes')}
               </label>
 
               <textarea
                 {...register('notes')}
-                placeholder="Private notes..."
+                placeholder={t('addSession_privateNotesPlaceholder')}
                 className="textarea"
               />
             </div>
@@ -621,10 +612,10 @@ export default function AddSessionModal({
 
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={onClose}
                 className="secondary-btn"
               >
-                Cancel
+                {t('cancel')}
               </button>
 
               <button
@@ -633,8 +624,8 @@ export default function AddSessionModal({
                 className={`primary-btn ${sessionsExceedRemaining ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {schedulingMode === 'single'
-                  ? 'Create Session'
-                  : 'Schedule Batch'}
+                  ? t('addSession_create')
+                  : t('addSession_scheduleBatch')}
               </button>
             </div>
           </div>
