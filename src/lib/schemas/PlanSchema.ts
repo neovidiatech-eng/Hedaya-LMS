@@ -14,6 +14,7 @@ export const getPlanSchema = (t: TFunc) => z.object({
   features: z.array(z.string().min(1)),
   isPopular: z.boolean(),
   status: z.enum(['active', 'inactive']),
+  isHidden: z.boolean(),
 });
 
 export type PlanFormData = z.infer<ReturnType<typeof getPlanSchema>>;

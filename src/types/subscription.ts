@@ -37,6 +37,7 @@ export interface Plan {
     updatedAt: string;
     active: boolean;
     bestSeller: boolean;
+    isHidden?: boolean;
     sessionsCount: number;
     sessionTime: number;
 }

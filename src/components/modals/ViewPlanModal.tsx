@@ -18,6 +18,7 @@ interface ViewPlanModalProps {
     features: string[];
     bestSeller: boolean;
     active: boolean;
+    isHidden: boolean;
     createdAt: string;
     updatedAt: string;
   };
@@ -45,6 +46,9 @@ export default function ViewPlanModal({ isOpen, onClose, plan }: ViewPlanModalPr
     status: { ar: 'الحالة', en: 'Status' },
     active: { ar: 'نشط', en: 'Active' },
     inactive: { ar: 'غير نشط', en: 'Inactive' },
+    isHiddenLabel: { ar: 'حالة الظهور', en: 'Visibility Status' },
+    hidden: { ar: 'مخفي', en: 'Hidden' },
+    visible: { ar: 'مرئي', en: 'Visible' },
     isPopular: { ar: 'الأكثر شعبية', en: 'Most Popular' },
     sessionTime: { ar: 'مدة الحصة (دقيقة)', en: 'Session Time (Minutes)' },
     yes: { ar: 'نعم', en: 'Yes' },
@@ -106,6 +110,12 @@ export default function ViewPlanModal({ isOpen, onClose, plan }: ViewPlanModalPr
                 <p className="text-sm text-gray-600 mb-1">{text.status[language]}</p>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${plan.active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                   {plan.active ? text.active[language] : text.inactive[language]}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">{text.isHiddenLabel[language]}</p>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${plan.isHidden ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
+                  {plan.isHidden ? text.hidden[language] : text.visible[language]}
                 </span>
               </div>
 

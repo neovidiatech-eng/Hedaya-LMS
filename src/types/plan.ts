@@ -19,6 +19,7 @@ export type Plan = {
   currencyId: string;
   active: boolean;
   bestSeller: boolean;
+  isHidden: boolean;
   currency?: Currency;
   createdAt: string;
   updatedAt: string;
@@ -46,6 +47,7 @@ export interface PlanBody {
   sessionsCount: number;
   active: boolean;
   bestSeller: boolean;
+  isHidden: boolean;
   features: string[];
   currencyId: string;
   sessionTime: number;

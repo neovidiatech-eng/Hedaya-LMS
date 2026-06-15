@@ -24,6 +24,7 @@ export default function Plans() {
     view: { ar: "عرض", en: "View" },
     active: { ar: "نشط", en: "Active" },
     inactive: { ar: "غير نشط", en: "Inactive" },
+    hidden: { ar: "مخفية", en: "Hidden" },
     popular: { ar: "الأكثر شعبية", en: "Most Popular" },
     sessions: { ar: "حصة", en: "sessions" },
     month: { ar: "شهر", en: "month" },
@@ -60,6 +61,7 @@ export default function Plans() {
           features: item.features || [],
           bestSeller: item.bestSeller,
           active: item.active,
+          isHidden: item.isHidden ?? false,
           createdAt: item.createdAt || new Date().toISOString(),
           updatedAt: item.updatedAt || new Date().toISOString(),
         }));
@@ -102,6 +104,7 @@ export default function Plans() {
         sessionTime: Number(planData.sessionTime),
         active: planData.status === "active",
         bestSeller: planData.isPopular,
+        isHidden: planData.isHidden,
         features: planData.features,
         currencyId: planData.currencyId,
       };
@@ -130,6 +133,7 @@ export default function Plans() {
         features: item.features || [],
         bestSeller: item.bestSeller,
         active: item.active,
+        isHidden: item.isHidden ?? false,
         createdAt: item.createdAt || new Date().toISOString(),
         updatedAt: item.updatedAt || new Date().toISOString(),
       }));
@@ -204,15 +208,22 @@ export default function Plans() {
                     </h3>
                     <p className="text-gray-600 text-sm">{plan.description}</p>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                      plan.active
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : "bg-gray-50 text-gray-700 border-gray-200"
-                    }`}
-                  >
-                    {plan.active ? text.active[language] : text.inactive[language]}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                        plan.active
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-gray-50 text-gray-700 border-gray-200"
+                      }`}
+                    >
+                      {plan.active ? text.active[language] : text.inactive[language]}
+                    </span>
+                    {plan.isHidden && (
+                      <span className="px-3 py-1 rounded-full text-xs font-medium border bg-yellow-50 text-yellow-700 border-yellow-200">
+                        {text.hidden[language]}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
 
@@ -300,6 +311,7 @@ export default function Plans() {
           features: selectedPlan.features,
           isPopular: selectedPlan.bestSeller,
           status: selectedPlan.active ? 'active' : 'inactive',
+          isHidden: selectedPlan.isHidden,
           id: selectedPlan.id
         } : null}
       />

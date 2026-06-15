@@ -9,6 +9,79 @@ import { getCurrencies } from '../../features/admin/services/CurrencyServices';
 import { Currency } from '../../types/currency';
 
 
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+}
+
+function ToggleSwitch({ checked, onChange, label }: ToggleSwitchProps) {
+  const { language } = useLanguage();
+  return (
+    <div 
+      className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-100 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer select-none"
+      onClick={() => onChange(!checked)}
+    >
+      <span className="text-sm font-semibold text-gray-700">{label}</span>
+      <div
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+          checked ? 'bg-primary' : 'bg-gray-300'
+        }`}
+      >
+        <span
+          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+            checked 
+              ? (language === 'ar' ? '-translate-x-5' : 'translate-x-5') 
+              : 'translate-x-0'
+          }`}
+        />
+      </div>
+    </div>
+  );
+}
+
+interface StatusPickerProps {
+  value: 'active' | 'inactive';
+  onChange: (value: 'active' | 'inactive') => void;
+  label: string;
+  activeLabel: string;
+  inactiveLabel: string;
+}
+
+function StatusPicker({ value, onChange, label, activeLabel, inactiveLabel }: StatusPickerProps) {
+  return (
+    <div className="flex flex-col gap-1.5 justify-center h-full">
+      <label className="block text-sm font-medium text-gray-700 text-start">
+        {label}
+      </label>
+      <div className="grid grid-cols-2 p-1 bg-gray-100 rounded-xl border border-gray-200">
+        <button
+          type="button"
+          onClick={() => onChange('active')}
+          className={`py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            value === 'active'
+              ? 'bg-white text-green-700 shadow-sm font-bold'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          {activeLabel}
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange('inactive')}
+          className={`py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            value === 'inactive'
+              ? 'bg-white text-red-600 shadow-sm font-bold'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          {inactiveLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface AddPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -33,6 +106,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
       features: [''],
       isPopular: false,
       status: 'active',
+      isHidden: false,
     },
 
   });
@@ -90,6 +164,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
           features: [''],
           isPopular: false,
           status: 'active',
+          isHidden: false,
         });
 
       }
@@ -109,7 +184,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
     sessionsCount: { ar: 'عدد الحصص', en: 'Sessions Count' },
     sessionTime: { ar: 'مدة الحصة (دقيقة)', en: 'Session Time (Minutes)' },
     features: { ar: 'المميزات', en: 'Features' },
-
+    isHidden: { ar: 'إخفاء الخطة', en: 'Hide Plan' },
     addFeature: { ar: 'إضافة ميزة', en: 'Add Feature' },
     isPopular: { ar: 'الأكثر شعبية', en: 'Most Popular' },
     status: { ar: 'الحالة', en: 'Status' },
@@ -291,6 +366,26 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
                   {errors.sessionTime.message}
                 </p>
               )}
+              
+            </div>
+            <div>
+           
+
+            <Controller
+              name="status"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <StatusPicker
+                  value={value}
+                  onChange={onChange}
+                  label={text.status[language]}
+                  activeLabel={text.active[language]}
+                  inactiveLabel={text.inactive[language]}
+                />
+              )}
+            />
+             
+              
             </div>
 
           </div>
@@ -337,35 +432,33 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
           </div>
 
           {/* Boolean + Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center justify-end gap-3">
-              <label className="text-sm font-medium text-gray-700">
-                {text.isPopular[language]}
-              </label>
-              <input type="checkbox" {...register('isPopular')}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="block text-sm font-medium text-gray-700 text-start mb-1">
-                {text.status[language]}
-              </label>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <Controller
-                name="status"
+                name="isPopular"
                 control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    {...field}
-                    options={[
-                      { value: 'active', label: text.active[language] },
-                      { value: 'inactive', label: text.inactive[language] }
-                    ]}
+                render={({ field: { value, onChange } }) => (
+                  <ToggleSwitch
+                    checked={value}
+                    onChange={onChange}
+                    label={text.isPopular[language]}
+                  />
+                )}
+              />
+
+              <Controller
+                name="isHidden"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <ToggleSwitch
+                    checked={value}
+                    onChange={onChange}
+                    label={text.isHidden[language]}
                   />
                 )}
               />
             </div>
+
           </div>
 
           {/* Actions */}
