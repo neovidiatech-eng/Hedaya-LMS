@@ -1,22 +1,18 @@
 import { useState } from "react";
-import {
-  Eye,
-  EyeOff,
-  Check,
-  User,
-  Mail,
-  Lock
-} from "lucide-react";
+import { Eye, EyeOff, Check, User, Mail, Lock } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ConfigProvider, DatePicker, Input, Select, message } from "antd";
-import localeAr from 'antd/es/locale/ar_EG';
-import localeEn from 'antd/es/locale/en_US';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ar';
+import localeAr from "antd/es/locale/ar_EG";
+import localeEn from "antd/es/locale/en_US";
+import dayjs from "dayjs";
+import "dayjs/locale/ar";
 import { usePlans } from "../features/admin/hooks/usePlans";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getRegisterSchema, RegisterInput } from "../lib/schemas/RegisterSchema";
+import {
+  getRegisterSchema,
+  RegisterInput,
+} from "../lib/schemas/RegisterSchema";
 import { register as registerService } from "../services/AuthServices";
 import { DEFAULT_COUNTRIES } from "../consts";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -27,14 +23,12 @@ interface RegisterProps {
 
 export default function Register({ onRegisterSuccess }: RegisterProps) {
   const navigate = useNavigate();
-   
   const [searchParams] = useSearchParams();
-  clg
-  const planIdFromUrl = searchParams.get("planId") || ""; 
+  const planIdFromUrl = searchParams.get("planId") || "";
   const { t, language } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const { data: plansData } = usePlans();
-    const {
+  const {
     register,
     handleSubmit: handleFormSubmit,
     control,
@@ -59,32 +53,30 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
 
   const selectedPackage = watch("plan_id");
 
-const displayNames = new Intl.DisplayNames(
-  [language === "ar" ? "ar" : "en"],
-  { type: "region" }
-);
+  const displayNames = new Intl.DisplayNames(
+    [language === "ar" ? "ar" : "en"],
+    { type: "region" },
+  );
 
-const countries = DEFAULT_COUNTRIES.map((country) => ({
-  value: country.name,
-  label: `${country.emoji} ${displayNames.of(country.iso2) || country.name}`,
-}));
+  const countries = DEFAULT_COUNTRIES.map((country) => ({
+    value: country.name,
+    label: `${country.emoji} ${displayNames.of(country.iso2) || country.name}`,
+  }));
 
-
-const countryCodes = Array.from(
-  new Map(
-    DEFAULT_COUNTRIES.map((country) => [
-      `+${country.phone_code}`,
-      {
-        value: `+${country.phone_code}`,
-        label: `${country.emoji} ${
-          displayNames.of(country.iso2) || country.name
-        } (+${country.phone_code})`,
-        country: displayNames.of(country.iso2) || country.name,
-      },
-    ])
-  ).values()
-);
-
+  const countryCodes = Array.from(
+    new Map(
+      DEFAULT_COUNTRIES.map((country) => [
+        `+${country.phone_code}`,
+        {
+          value: `+${country.phone_code}`,
+          label: `${country.emoji} ${
+            displayNames.of(country.iso2) || country.name
+          } (+${country.phone_code})`,
+          country: displayNames.of(country.iso2) || country.name,
+        },
+      ]),
+    ).values(),
+  );
 
   const genders = [
     { value: "male", label: t("male") },
@@ -108,9 +100,12 @@ const countryCodes = Array.from(
     }
   };
 
-  const primaryColor = typeof window !== "undefined"
-    ? getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim() || "#369589"
-    : "#369589";
+  const primaryColor =
+    typeof window !== "undefined"
+      ? getComputedStyle(document.documentElement)
+          .getPropertyValue("--color-primary")
+          .trim() || "#369589"
+      : "#369589";
 
   return (
     <ConfigProvider
@@ -124,7 +119,7 @@ const countryCodes = Array.from(
           Select: {
             controlHeight: 52,
             optionSelectedBg: `${primaryColor}10`,
-            colorTextPlaceholder: '#94a3b8',
+            colorTextPlaceholder: "#94a3b8",
             activeBorderColor: primaryColor,
             hoverBorderColor: primaryColor,
             borderRadius: 16,
@@ -150,12 +145,13 @@ const countryCodes = Array.from(
           <h1 className="text-2xl font-bold text-slate-800 mb-2">
             {t("registerNewStudent")}
           </h1>
-          <p className="text-slate-500 text-sm font-medium">{t("joinAcademy")}</p>
+          <p className="text-slate-500 text-sm font-medium">
+            {t("joinAcademy")}
+          </p>
         </div>
 
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
             {/* Name */}
             <div className="text-start">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -165,14 +161,22 @@ const countryCodes = Array.from(
                 <input
                   type="text"
                   {...register("name")}
-                  placeholder={language === "ar" ? "أحمد محمد" : "Ahmed Mohamed"}
-                  className={`w-full h-12 px-4 py-2.5 ${language === 'ar' ? 'pr-11 pl-4' : 'pl-11 pr-4'} bg-slate-50 border ${errors.name ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/10'} rounded-xl outline-none transition-all focus:ring-4 hover:border-slate-300 font-medium`}
+                  placeholder={
+                    language === "ar" ? "أحمد محمد" : "Ahmed Mohamed"
+                  }
+                  className={`w-full h-12 px-4 py-2.5 ${language === "ar" ? "pr-11 pl-4" : "pl-11 pr-4"} bg-slate-50 border ${errors.name ? "border-red-400 focus:ring-red-100" : "border-slate-200 focus:border-primary focus:ring-primary/10"} rounded-xl outline-none transition-all focus:ring-4 hover:border-slate-300 font-medium`}
                 />
-                <div className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-slate-400`}>
+                <div
+                  className={`absolute ${language === "ar" ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 text-slate-400`}
+                >
                   <User className="w-5 h-5" />
                 </div>
               </div>
-              {errors.name && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.name.message}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             {/* Email */}
@@ -185,14 +189,20 @@ const countryCodes = Array.from(
                   type="email"
                   {...register("email")}
                   placeholder="student@example.com"
-                  className={`w-full h-12 px-4 py-2.5 ${language === 'ar' ? 'pr-11 pl-4' : 'pl-11 pr-4'} bg-slate-50 border ${errors.email ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/10'} rounded-xl outline-none transition-all focus:ring-4 hover:border-slate-300 font-medium`}
+                  className={`w-full h-12 px-4 py-2.5 ${language === "ar" ? "pr-11 pl-4" : "pl-11 pr-4"} bg-slate-50 border ${errors.email ? "border-red-400 focus:ring-red-100" : "border-slate-200 focus:border-primary focus:ring-primary/10"} rounded-xl outline-none transition-all focus:ring-4 hover:border-slate-300 font-medium`}
                   dir="ltr"
                 />
-                <div className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-slate-400`}>
+                <div
+                  className={`absolute ${language === "ar" ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 text-slate-400`}
+                >
                   <Mail className="w-5 h-5" />
                 </div>
               </div>
-              {errors.email && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             {/* Phone and Country Code */}
@@ -226,7 +236,11 @@ const countryCodes = Array.from(
                   )}
                 />
               </div>
-              {errors.phone && <p className="text-red-500 text-xs mt-1.5 font-semibold text-start">{errors.phone.message}</p>}
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold text-start">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
 
             {/* Birth Date */}
@@ -243,11 +257,17 @@ const countryCodes = Array.from(
                     status={errors.birth_date ? "error" : ""}
                     placeholder={t("selectDate")}
                     value={value ? dayjs(value) : null}
-                    onChange={(date) => onChange(date ? date.format("YYYY-MM-DD") : "")}
+                    onChange={(date) =>
+                      onChange(date ? date.format("YYYY-MM-DD") : "")
+                    }
                   />
                 )}
               />
-              {errors.birth_date && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.birth_date.message}</p>}
+              {errors.birth_date && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
+                  {errors.birth_date.message}
+                </p>
+              )}
             </div>
 
             {/* Gender */}
@@ -269,7 +289,11 @@ const countryCodes = Array.from(
                   />
                 )}
               />
-              {errors.gender && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.gender.message}</p>}
+              {errors.gender && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
+                  {errors.gender.message}
+                </p>
+              )}
             </div>
 
             {/* Country */}
@@ -289,12 +313,18 @@ const countryCodes = Array.from(
                     className="w-full h-12"
                     status={errors.country ? "error" : ""}
                     filterOption={(input, option) =>
-                      (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
                     }
                   />
                 )}
               />
-              {errors.country && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.country.message}</p>}
+              {errors.country && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
+                  {errors.country.message}
+                </p>
+              )}
             </div>
 
             {/* Password */}
@@ -307,10 +337,12 @@ const countryCodes = Array.from(
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
                   placeholder="••••••••"
-                  className={`w-full h-12 px-4 py-2.5 ${language === 'ar' ? 'pr-11 pl-11' : 'pl-11 pr-11'} bg-slate-50 border ${errors.password ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/10'} rounded-xl outline-none transition-all focus:ring-4 hover:border-slate-300 font-medium`}
+                  className={`w-full h-12 px-4 py-2.5 ${language === "ar" ? "pr-11 pl-11" : "pl-11 pr-11"} bg-slate-50 border ${errors.password ? "border-red-400 focus:ring-red-100" : "border-slate-200 focus:border-primary focus:ring-primary/10"} rounded-xl outline-none transition-all focus:ring-4 hover:border-slate-300 font-medium`}
                   dir="ltr"
                 />
-                <div className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-slate-400`}>
+                <div
+                  className={`absolute ${language === "ar" ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 text-slate-400`}
+                >
                   <Lock className="w-5 h-5" />
                 </div>
                 <button
@@ -318,10 +350,18 @@ const countryCodes = Array.from(
                   onClick={() => setShowPassword(!showPassword)}
                   className={`absolute ${language === "ar" ? "left-4" : "right-4"} top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none`}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
-              {errors.password && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -347,7 +387,9 @@ const countryCodes = Array.from(
                 <button
                   key={pkg.id}
                   type="button"
-                  onClick={() => setValue("plan_id", pkg.id, { shouldValidate: true })}
+                  onClick={() =>
+                    setValue("plan_id", pkg.id, { shouldValidate: true })
+                  }
                   className={`w-full p-2 rounded-xl border-2 transition-all text-start relative overflow-hidden flex flex-col justify-between min-h-[80px] cursor-pointer ${
                     selectedPackage === pkg.id
                       ? "border-primary bg-primary/5 shadow-lg shadow-primary/5 scale-[1.01]"
@@ -355,26 +397,41 @@ const countryCodes = Array.from(
                   }`}
                 >
                   {selectedPackage === pkg.id && (
-                    <div className={`absolute top-0 ${language === 'ar' ? 'left-0 rounded-br-xl' : 'right-0 rounded-bl-xl'} w-6 h-6 bg-primary flex items-center justify-center`}>
+                    <div
+                      className={`absolute top-0 ${language === "ar" ? "left-0 rounded-br-xl" : "right-0 rounded-bl-xl"} w-6 h-6 bg-primary flex items-center justify-center`}
+                    >
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
                   <div className="text-start">
-                    <div className={`font-bold text-sm mb-1 ${selectedPackage === pkg.id ? "text-primary" : "text-slate-800"}`}>
+                    <div
+                      className={`font-bold text-sm mb-1 ${selectedPackage === pkg.id ? "text-primary" : "text-slate-800"}`}
+                    >
                       {language === "ar" ? pkg.name_ar : pkg.name_en}
                     </div>
                     <div className="text-slate-500 text-xs font-semibold">
                       {pkg.sessionsCount} {t("sessionsCount")}
                     </div>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-slate-100 w-full flex items-baseline gap-1" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                    <span className="text-xs text-slate-400 font-semibold">{pkg.currency?.symbol}</span>
-                    <span className="text-lg font-extrabold text-slate-800">{pkg.price}</span>
+                  <div
+                    className="mt-2 pt-2 border-t border-slate-100 w-full flex items-baseline gap-1"
+                    dir={language === "ar" ? "rtl" : "ltr"}
+                  >
+                    <span className="text-xs text-slate-400 font-semibold">
+                      {pkg.currency?.symbol}
+                    </span>
+                    <span className="text-lg font-extrabold text-slate-800">
+                      {pkg.price}
+                    </span>
                   </div>
                 </button>
               ))}
             </div>
-            {errors.plan_id && <p className="text-red-500 text-xs mt-2 font-semibold text-start">{errors.plan_id.message}</p>}
+            {errors.plan_id && (
+              <p className="text-red-500 text-xs mt-2 font-semibold text-start">
+                {errors.plan_id.message}
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -394,10 +451,8 @@ const countryCodes = Array.from(
           <p className="text-center text-xs text-slate-400 leading-relaxed font-medium">
             {t("afterRegistration")}
           </p>
-
         </form>
       </div>
     </ConfigProvider>
   );
 }
-
