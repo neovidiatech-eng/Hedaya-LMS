@@ -14,12 +14,12 @@ import localeEn from 'antd/es/locale/en_US';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ar';
 import { usePlans } from "../features/admin/hooks/usePlans";
-import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getRegisterSchema, RegisterInput } from "../lib/schemas/RegisterSchema";
 import { register as registerService } from "../services/AuthServices";
 import { DEFAULT_COUNTRIES } from "../consts";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface RegisterProps {
   onRegisterSuccess: () => void;
@@ -27,11 +27,14 @@ interface RegisterProps {
 
 export default function Register({ onRegisterSuccess }: RegisterProps) {
   const navigate = useNavigate();
+   
+  const [searchParams] = useSearchParams();
+  clg
+  const planIdFromUrl = searchParams.get("planId") || ""; 
   const { t, language } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const { data: plansData } = usePlans();
-
-  const {
+    const {
     register,
     handleSubmit: handleFormSubmit,
     control,
@@ -50,7 +53,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
       gender: "",
       country: "",
       password: "",
-      plan_id: "",
+      plan_id: planIdFromUrl,
     },
   });
 
