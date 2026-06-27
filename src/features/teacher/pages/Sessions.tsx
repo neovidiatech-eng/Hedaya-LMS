@@ -290,8 +290,8 @@ export default function Sessions() {
                               console.log(error);
                             }
                           }}
-                          disabled={isJoining || !isJoinable(session.start_time, session.end_time, session.link)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${isJoinable(session.start_time, session.end_time, session.link)
+                          disabled={isJoining || !isJoinable(session.start_time, session.end_time, session.link) || session.status?.toLowerCase() === 'completed'}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(isJoinable(session.start_time, session.end_time, session.link) && session.status?.toLowerCase() !== 'completed')
                             ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm hover:shadow-md'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                             } ${isJoining ? 'opacity-50 cursor-wait' : ''}`}
@@ -329,8 +329,13 @@ export default function Sessions() {
                             setSessionForRequest(session);
                             setIsRequestModalOpen(true);
                           }}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-white font-normal transition-all hover:opacity-90 shadow-sm hover:shadow-md"
-                          style={{ backgroundColor: settings.primaryColor }}
+                          disabled={session.status?.toLowerCase() === 'completed'}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl font-normal transition-all shadow-sm hover:shadow-md ${
+                            session.status?.toLowerCase() === 'completed' 
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                              : 'text-white hover:opacity-90'
+                          }`}
+                          style={session.status?.toLowerCase() === 'completed' ? {} : { backgroundColor: settings.primaryColor }}
                         >
                           <Plus className="w-5 h-5" />
                           {isRtl ? 'طلب جديد' : 'Add Request'}

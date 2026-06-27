@@ -1,9 +1,18 @@
 import api from "../../../lib/axios"
 import { CreateTeacherInput, Teacher, TeachersData, TeachersFetchResponse, UpdateTeacherInput } from "../../../types/teachers"
 
-export const getTeacher = async (): Promise<TeachersData> => {
-    const response = await api.get("/teachers");
-    return response.data.data
+export interface GetTeachersParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+}
+
+export const getTeacher = async (params: GetTeachersParams = {}): Promise<TeachersData> => {
+    const { search } = params;
+    const queryParams: Record<string, string | number> = {};
+    if (search) queryParams.search = search;
+    const response = await api.get("/teachers", Object.keys(queryParams).length > 0 ? { params: queryParams } : undefined);
+    return response.data.data;
 }
 
 export const searchTeacher = async (search: string): Promise<TeachersData> => {

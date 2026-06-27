@@ -48,7 +48,7 @@ export default function SubscribePlanModal({ isOpen, onClose }: SubscribePlanMod
         '12 حصة شهرياً',
         'دعم فني على مدار الساعة',
         'وصول للمواد التعليمية',
-        'تقارير الأداء الأسبهدايةة'
+        'تقارير الأداء الأسبوعية'
       ],
       isPopular: false,
       status: 'active'

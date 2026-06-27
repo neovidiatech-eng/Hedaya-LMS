@@ -124,7 +124,7 @@ export default function AddRoleModal({
         profile: { ar: 'الملف الشخصي', en: 'Profile' },
         requests: { ar: 'الطلبات', en: 'Requests' },
         withdrawals: { ar: 'طلبات السحب', en: 'Withdrawals' },
-        weekly_reports: { ar: 'التقارير الأسبهدايةة', en: 'Weekly Reports' },
+        weekly_reports: { ar: 'التقارير الأسبوعية', en: 'Weekly Reports' },
         subscriptions: { ar: 'الاشتراكات', en: 'Subscriptions' },
         support: { ar: 'الدعم', en: 'Support' },
         calendar: { ar: 'التقويم', en: 'Calendar' },

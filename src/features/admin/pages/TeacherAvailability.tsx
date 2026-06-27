@@ -254,7 +254,7 @@ function TeacherDetailModal({
             onClick={() => setTab("week")}
             className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${tab === "week" ? "tab-active" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
-            {language === "ar" ? "الجدول الأسبهداية" : "Weekly Schedule"}
+            {language === "ar" ? "الجدول الأسبوعي" : "Weekly Schedule"}
           </button>
           <button
             onClick={() => setTab("month")}
@@ -721,7 +721,7 @@ export default function TeacherAvailability() {
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             {language === "ar"
-              ? "جدول توافر المعلمين الأسبهداية"
+              ? "جدول توافر المعلمين الأسبوعي"
               : "Weekly teacher availability schedule"}
           </p>
         </div>
@@ -730,7 +730,7 @@ export default function TeacherAvailability() {
             onClick={() => setViewMode("week")}
             className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "week" ? "bg-white text-[#6366f1] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
           >
-            {language === "ar" ? "عرض أسبهداية" : "Week View"}
+            {language === "ar" ? "عرض أسبوعي" : "Week View"}
           </button>
           <button
             onClick={() => setViewMode("teacher")}

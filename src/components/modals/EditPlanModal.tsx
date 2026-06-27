@@ -74,27 +74,23 @@ export default function EditPlanModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const filteredFeatures = formData.features.filter((f) => f.trim() !== "");
-    if (filteredFeatures.length === 0) {
-      alert(
-        language === "ar"
-          ? "يجب إضافة ميزة واحدة على الأقل"
-          : "Please add at least one feature",
-      );
-      return;
+    
+    const payload: any = {
+      ...plan,
+      ...formData,
+    };
+
+    if (filteredFeatures.length > 0) {
+      payload.features = filteredFeatures;
+    } else {
+      delete payload.features;
     }
-    try {
-      await onSave({
-        ...plan,
-        ...formData,
-        features: filteredFeatures,
-      });
-      onClose();
-    } catch (error) {
-      console.error('Save failed:', error);
-    }
+
+    onSave(payload);
+    onClose();
   };
 
   const addFeature = () => {
