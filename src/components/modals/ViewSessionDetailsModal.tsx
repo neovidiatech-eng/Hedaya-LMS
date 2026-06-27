@@ -229,10 +229,15 @@ export default function ViewSessionDetailsModal({ isOpen, onClose, sessionGroup,
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {session.status === 'scheduled' && onJoinSession && (
+                          {(session.status === 'scheduled' || session.status === 'completed') && onJoinSession && localStorage.getItem('role') !== 'admin' && localStorage.getItem('role') !== 'super_admin' && (
                             <button
-                              onClick={() => onJoinSession(sessionGroup.id, index)}
-                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                              onClick={() => session.status !== 'completed' && onJoinSession(sessionGroup.id, index)}
+                              disabled={session.status === 'completed'}
+                              className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors text-sm font-medium ${
+                                session.status === 'completed'
+                                  ? 'bg-gray-400 cursor-not-allowed'
+                                  : 'bg-green-600 hover:bg-green-700'
+                              }`}
                             >
                               <Video className="w-4 h-4" />
                               {text.joinSession[language]}

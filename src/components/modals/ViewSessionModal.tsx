@@ -197,15 +197,24 @@ export default function ViewSessionModal({ isOpen, onClose, session, groupedSess
               <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 mb-6">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('meetingLink')}</p>
                 <div className="flex items-center gap-3">
-                  <a
-                    href={session.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all text-xs font-bold shadow-sm active:scale-95"
-                  >
-                    <Video className="w-4 h-4" />
-                    {t('joinSession')}
-                  </a>
+                  {localStorage.getItem('role') !== 'admin' && localStorage.getItem('role') !== 'super_admin' && (
+                    <a
+                      href={session.status === 'completed' ? '#' : session.link}
+                      target={session.status === 'completed' ? '_self' : '_blank'}
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        if (session.status === 'completed') e.preventDefault();
+                      }}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all text-xs font-bold shadow-sm ${
+                        session.status === 'completed'
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95'
+                      }`}
+                    >
+                      <Video className="w-4 h-4" />
+                      {t('joinSession')}
+                    </a>
+                  )}
                   <span className="text-xs text-gray-400 break-all" dir="ltr">{session.link}</span>
                 </div>
               </div>

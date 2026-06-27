@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, Lock } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from '../ui/CustomSelect';
-import { UserFormData, getUserSchema } from '../../lib/schemas/UserSchema';
+import { EditUserFormData, getEditUserSchema } from '../../lib/schemas/UserSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { useRoles } from '../../features/admin/hooks/useRoles';
@@ -14,8 +14,8 @@ import { DEFAULT_COUNTRIES } from '../../consts/countries';
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (userData: UserFormData & { id: string }) => void;
-  userData: UserFormData & { id: string };
+  onSubmit: (userData: EditUserFormData & { id: string }) => Promise<void>;
+  userData: EditUserFormData & { id: string };
 }
 // Static permission list removed in favor of dynamic fetching
 
@@ -42,8 +42,8 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
   //   return acc;
   // }, {});
 
-  const { control, handleSubmit, register, reset, formState: { errors } } = useForm<UserFormData>({
-    resolver: zodResolver(getUserSchema(t)),
+  const { control, handleSubmit, register, reset, formState: { errors } } = useForm<EditUserFormData>({
+    resolver: zodResolver(getEditUserSchema(t)),
     defaultValues: userData,
   });
 
@@ -54,28 +54,22 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
 
   useEffect(() => {
     if (userData && isOpen) {
-      reset({ ...userData, password: '' })
+      reset({ ...userData, password: userData.password || '' });
     }
-  }, [userData, isOpen, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData?.id, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleClose = () => {
-    if (Object.keys(errors).length === 0) {
-      onClose();
-    }
-  };
-
-  const onFormSubmit = async (data: UserFormData) => {
+  const onFormSubmit = async (data: EditUserFormData) => {
     try {
       await onSubmit({
         ...data,
         id: userData.id,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
-      onClose();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -114,7 +108,7 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
             {t('editUser')}
           </h2>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <X className="w-6 h-6 text-white/80" />
@@ -281,7 +275,7 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
           <button
             type="button"
-            onClick={handleClose}
+            onClick={onClose}
             className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium"
           >
             {t('cancel')}
@@ -298,5 +292,4 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
     </div>
   );
 }
-
 

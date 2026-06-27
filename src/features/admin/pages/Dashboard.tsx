@@ -305,29 +305,31 @@ export default function Dashboard() {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
-        <th className="px-4 py-4 text-start font-semibold">
-  {t("dashboard.user")}
-</th>
+          <tr>
+            <th className="px-4 py-4 text-start font-semibold">
+              {t("dashboard.user")}
+            </th>
 
-<th className="px-4 py-4 text-start font-semibold">
-  {t("dashboard.emailColumn")}
-</th>
+            <th className="px-4 py-4 text-start font-semibold">
+              {t("dashboard.emailColumn")}
+            </th>
 
-<th className="px-4 py-4 text-start font-semibold">
-  {t("dashboard.role")}
-</th>
+            <th className="px-4 py-4 text-start font-semibold">
+              {t("dashboard.role")}
+            </th>
 
-<th className="px-4 py-4 text-start font-semibold">
-  {t("dashboard.action")}
-</th>
+            <th className="px-4 py-4 text-start font-semibold">
+              {t("dashboard.action")}
+            </th>
 
-<th className="px-4 py-4 text-start font-semibold">
-  {t("dashboard.statusColumn")}
-</th>
+            <th className="px-4 py-4 text-start font-semibold">
+              {t("dashboard.statusColumn")}
+            </th>
 
-<th className="px-4 py-4 text-start font-semibold">
-  {t("dashboard.timeColumn")}
-</th>
+            <th className="px-4 py-4 text-start font-semibold">
+              {t("dashboard.timeColumn")}
+            </th>
+          </tr>
         </thead>
 
         <tbody className="divide-y divide-gray-50">
