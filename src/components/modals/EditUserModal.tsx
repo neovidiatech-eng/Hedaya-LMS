@@ -42,7 +42,7 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
   //   return acc;
   // }, {});
 
-  const { control, handleSubmit, register, reset, formState: { errors } } = useForm<EditUserFormData>({
+  const { control, handleSubmit, register, reset, formState: { errors, isSubmitting } } = useForm<EditUserFormData>({
     resolver: zodResolver(getEditUserSchema(t)),
     defaultValues: userData,
   });
@@ -53,7 +53,7 @@ export default function EditUserModal({ isOpen, onClose, onSubmit, userData }: E
   const dynamicRoles = rolesData?.data || [];
 
   useEffect(() => {
-    if (userData && isOpen) {
+    if (userData && isOpen && !isSubmitting) {
       reset({ ...userData, password: userData.password || '' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

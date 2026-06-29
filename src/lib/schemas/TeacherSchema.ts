@@ -31,3 +31,11 @@ export const getTeacherSchema = (t: TFunc) => z.object({
 });
 
 export type TeacherFormData = z.infer<ReturnType<typeof getTeacherSchema>>;
+
+export const getEditTeacherSchema = (t: TFunc) => getTeacherSchema(t).extend({
+  password: z.string().min(8, t("validation.passwordMin", { count: 8 }))
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]+$/,
+      t("validation.passwordComplex")
+    ).optional().or(z.literal('')),
+});

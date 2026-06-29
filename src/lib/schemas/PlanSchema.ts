@@ -13,6 +13,7 @@ export const getPlanSchema = (t: TFunc) => z.object({
   sessionTime: z.coerce.number().min(1, t("validation.required")),
   features: z.array(z.string()).optional().default([]),
   isPopular: z.boolean(),
+  isHidden: z.boolean().optional().default(false),
   status: z.enum(['active', 'inactive']),
 });
 

@@ -1,12 +1,13 @@
-import { X, GraduationCap } from 'lucide-react';
+import { X, GraduationCap, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from '../ui/CustomSelect';
 import DatePickerField from '../ui/DatePickerField';
-import { StudentFormData, getStudentSchema } from '../../lib/schemas/StudentSchema';
+import { StudentFormData, getEditStudentSchema } from '../../lib/schemas/StudentSchema';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePlans } from '../../features/admin/hooks/usePlans';
+import { useStudentById } from '../../features/admin/hooks/useStudents';
 import { DEFAULT_COUNTRIES } from '../../consts/countries';
 
 type EditStudentFormData = Omit<StudentFormData, 'password'> & { password?: string };
@@ -28,16 +29,36 @@ export default function EditStudentModal({
   const { data: plansData } = usePlans();
   const [countryCodes] = useState<Array<{ name: string; phone_code: string; emoji?: string; iso2: string }>>(DEFAULT_COUNTRIES);
 
-  const { control, handleSubmit, register, reset, formState: { errors } } = useForm<EditStudentFormData>({
-    resolver: zodResolver(getStudentSchema(t).omit({ password: true })),
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { data: studentResponse, isLoading: isFetchingStudent } = useStudentById(isOpen && studentData ? studentData.id : undefined);
+
+  const { control, handleSubmit, register, reset, formState: { errors, isSubmitting } } = useForm<EditStudentFormData>({
+    resolver: zodResolver(getEditStudentSchema(t)),
     defaultValues: studentData || undefined,
   });
 
   useEffect(() => {
-    if (isOpen && studentData) {
-      reset(studentData);
+    if (isOpen && !isSubmitting) {
+      const rawStudent: any = (studentResponse as any)?.data?.student || (studentResponse as any)?.student || (studentResponse as any)?.data || studentResponse;
+      if (rawStudent && rawStudent.user) {
+        reset({
+          name: rawStudent.user.name,
+          email: rawStudent.user.email,
+          phone: rawStudent.user.phone,
+          phone_code: rawStudent.user.code_country,
+          country: rawStudent.country ? rawStudent.country.toLowerCase() : 'egypt',
+          status: (rawStudent.status || 'pending') as any,
+          gender: rawStudent.gender || 'male',
+          plan: rawStudent.planId || '',
+          password: rawStudent.user.password || '',
+          birthDate: rawStudent.birth_date ? rawStudent.birth_date.split('T')[0] : '',
+        });
+      } else if (studentData) {
+        reset(studentData);
+      }
     }
-  }, [isOpen, studentData, reset]);
+  }, [isOpen, studentData, studentResponse, reset]);
 
   if (!isOpen || !studentData) return null;
 
@@ -109,8 +130,9 @@ export default function EditStudentModal({
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <GraduationCap className="w-6 h-6" />
             <span>{t('editStudent')}</span>
+            {isFetchingStudent && <Loader2 className="w-5 h-5 animate-spin ml-2" />}
           </h2>
-          <button onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <button type="button" onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/80" />
           </button>
         </div>
@@ -136,6 +158,30 @@ export default function EditStudentModal({
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('phone')} *</label>
               <input {...register('phone')} className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-start" dir="ltr" />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+            </div>
+
+            {/* Password */}
+            <div className="text-start relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('password')}
+              </label>
+              <div className="relative">
+                <Lock className="absolute start-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  {...register('password')}
+                  className="w-full px-12 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-start bg-gray-50 transition-all"
+                  dir="ltr"
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute end-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+              <p className="text-xs text-gray-500 mt-1 text-start">
+                {t('leaveBlankPassword')}
+              </p>
             </div>
 
             {/* Country Code */}

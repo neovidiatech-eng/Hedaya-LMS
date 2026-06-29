@@ -103,6 +103,7 @@ export default function Plans() {
         active: planData.status === "active",
         bestSeller: planData.isPopular,
         currencyId: planData.currencyId,
+        isHidden: planData.isHidden ?? false,
       };
 
       if (planData.description && planData.description.trim() !== '') {
@@ -305,6 +306,7 @@ export default function Plans() {
           sessionTime: selectedPlan.sessionTime,
           features: selectedPlan.features,
           isPopular: selectedPlan.bestSeller,
+          isHidden: selectedPlan.isHidden,
           status: selectedPlan.active ? 'active' : 'inactive',
           id: selectedPlan.id
         } : null}

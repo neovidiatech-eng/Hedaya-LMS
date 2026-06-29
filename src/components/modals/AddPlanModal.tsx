@@ -32,6 +32,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
       sessionTime: 60,
       features: [''],
       isPopular: false,
+      isHidden: false,
       status: 'active',
     },
 
@@ -86,6 +87,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
           sessionTime: 60,
           features: [''],
           isPopular: false,
+          isHidden: false,
           status: 'active',
         });
 
@@ -121,7 +123,8 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
     
     const payload: any = {
       ...data,
-      id: initialData?.id
+      id: initialData?.id,
+      isHidden: data.isHidden ?? false
     };
 
     if (filteredFeatures.length > 0) {

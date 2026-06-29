@@ -16,6 +16,7 @@ interface EditPlanModalProps {
     sessionsCount: number;
     features: string[];
     isPopular: boolean;
+    isHidden?: boolean;
     status: "active" | "inactive";
   };
   onSave: (plan: any) => void;
@@ -38,6 +39,7 @@ export default function EditPlanModal({
     sessionsCount: plan.sessionsCount,
     features: [...plan.features],
     isPopular: plan.isPopular,
+    isHidden: plan.isHidden ?? false,
     status: plan.status,
   });
 
@@ -81,6 +83,7 @@ export default function EditPlanModal({
     const payload: any = {
       ...plan,
       ...formData,
+      isHidden: formData.isHidden ?? false,
     };
 
     if (filteredFeatures.length > 0) {

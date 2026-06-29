@@ -8,12 +8,16 @@ interface EditSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
   session: Schedule | null;
-  onSave: (id: string, data: any) => void;
+  groupedSessions?: Schedule[];
+  onSave: (id: string, data: any) => Promise<void>;
 }
 
-export default function EditSessionModal({ isOpen, onClose, session, onSave }: EditSessionModalProps) {
+export default function EditSessionModal({ isOpen, onClose, session, groupedSessions, onSave }: EditSessionModalProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language.split('-')[0];
+
+  const [currentSession, setCurrentSession] = useState<Schedule | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -36,41 +40,61 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
     return `${y}-${mo}-${d}T${h}:${mi}`;
   };
 
+  const populateForm = (s: Schedule) => {
+    const startDate = s.start_time ? new Date(s.start_time) : null;
+    const endDate = s.end_time ? new Date(s.end_time) : null;
+    setFormData({
+      title: s.title || '',
+      description: s.description || '',
+      link: s.link || '',
+      notes: s.notes || '',
+      status: s.status === 'scheduled' ? 'planned' : (s.status || 'planned'),
+      start_time: startDate ? toLocalDatetimeString(startDate) : '',
+      end_time: endDate ? toLocalDatetimeString(endDate) : '',
+      type: (s.type as 'full' | 'half') || 'full',
+      notification_Time: String((s as any).notification_Time || (s as any).notification_time || (s as any).notificationTime || '10'),
+    });
+  };
+
   useEffect(() => {
-    if (session && isOpen) {
-      const startDate = session.start_time ? new Date(session.start_time) : null;
-      const endDate = session.end_time ? new Date(session.end_time) : null;
-      setFormData({
-        title: session.title || '',
-        description: session.description || '',
-        link: session.link || '',
-        notes: session.notes || '',
-        status: session.status === 'scheduled' ? 'planned' : (session.status || 'planned'),
-        start_time: startDate ? toLocalDatetimeString(startDate) : '',
-        end_time: endDate ? toLocalDatetimeString(endDate) : '',
-        type: (session.type as 'full' | 'half') || 'full',
-        notification_Time: '10',
-      });
+    if (session && isOpen && !isSubmitting) {
+      setCurrentSession(session);
+      populateForm(session);
     }
   }, [session, isOpen]);
 
-  if (!isOpen || !session) return null;
+  const handleSelectSession = (s: Schedule) => {
+    setCurrentSession(s);
+    populateForm(s);
+  };
+
+  if (!isOpen || !session || !currentSession) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const payload: any = {
+      title: formData.title,
+      link: formData.link,
+      status: formData.status,
+      start_time: formData.start_time ? new Date(formData.start_time).toISOString() : currentSession.start_time,
+      notification_Time: formData.notification_Time,
+    };
+
+    if (formData.description && formData.description.trim() !== '') {
+      payload.description = formData.description;
+    }
+
+    if (formData.notes && formData.notes.trim() !== '') {
+      payload.notes = formData.notes;
+    }
+
+    setIsSubmitting(true);
     try {
-      await onSave(session.id, {
-        title: formData.title,
-        description: formData.description,
-        link: formData.link,
-        notes: formData.notes,
-        status: formData.status,
-        start_time: formData.start_time ? new Date(formData.start_time).toISOString() : session.start_time,
-        notification_Time: formData.notification_Time,
-      });
+      await onSave(currentSession.id, payload);
       onClose();
-    } catch (error) {
-      console.error('Save failed:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -79,13 +103,13 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4 font-sans transition-all">
+    <div className="fixed inset-0 !mt-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4 font-sans transition-all">
       <div className="bg-white rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-[1000px] max-h-[92vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
         
         {/* Header */}
         <div className="px-8 py-5 border-b border-gray-100 flex items-start justify-between bg-white shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-[14px] bg-indigo-50 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-[14px] bg-primary-50 flex items-center justify-center">
               <Calendar className="w-6 h-6 text-[#6366f1]" />
             </div>
             <div>
@@ -107,12 +131,12 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
             {/* Read-only info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="flex items-start gap-3 bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                <div className="p-2 rounded-xl bg-blue-50 text-blue-500">
+                <div className="p-2 rounded-xl bg-primary-50 text-blue-500">
                   <User className="w-4 h-4" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('studentLabel')}</p>
-                  <p className="text-sm font-bold text-gray-900">{session.student?.user?.name || '—'}</p>
+                  <p className="text-sm font-bold text-gray-900">{currentSession.student?.user?.name || '—'}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-gray-50 rounded-2xl p-4 border border-gray-100">
@@ -121,7 +145,7 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('teacherLabel')}</p>
-                  <p className="text-sm font-bold text-gray-900">{session.teacher?.user?.name || '—'}</p>
+                  <p className="text-sm font-bold text-gray-900">{currentSession.teacher?.user?.name || '—'}</p>
                 </div>
               </div>
             </div>
@@ -254,15 +278,52 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+              {/* Batch Sessions List */}
+              {groupedSessions && groupedSessions.length > 1 && (
+                <div className="mb-6">
+                  <h4 className="text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('recurringSessions')}</h4>
+                  <div className="space-y-2">
+                    {groupedSessions.map(s => (
+                      <div 
+                        key={s.id} 
+                        onClick={() => handleSelectSession(s)}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                          currentSession.id === s.id 
+                            ? 'bg-indigo-50 border-indigo-200 ring-1 ring-indigo-500 shadow-sm' 
+                            : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-bold text-gray-900 mb-0.5">
+                            {s.title}
+                          </p>
+                          <p className="text-[11px] font-bold text-gray-600">
+                            {new Date(s.start_time).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'short' })}
+                          </p>
+                          <p className="text-[10px] font-bold text-gray-400 mt-0.5" dir="ltr">
+                            {new Date(s.start_time).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        {currentSession.id === s.id && (
+                          <span className="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full uppercase">
+                            {t('edit')}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Preview Card */}
               <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-indigo-600 font-black text-sm">
                     {formData.title?.charAt(0)?.toUpperCase() || 'S'}
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-gray-900">{formData.title || t('sessionTitleLabel')}</h4>
-                    <p className="text-[10px] font-bold text-gray-400">{session.student?.user?.name}</p>
+                    <p className="text-[10px] font-bold text-gray-400">{currentSession.student?.user?.name}</p>
                   </div>
                 </div>
                 <div className="space-y-2.5">
@@ -271,7 +332,7 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border uppercase tracking-widest ${
                       formData.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                       formData.status === 'cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
-                      'bg-blue-50 text-blue-600 border-blue-100'
+                      'bg-primary-50 text-blue-600 border-blue-100'
                     }`}>
                       {t(formData.status)}
                     </span>
@@ -298,10 +359,10 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
               <div className="bg-white border border-gray-100 rounded-2xl p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 font-black text-sm">
-                    {session.teacher?.user?.name?.charAt(0)?.toUpperCase() || 'T'}
+                    {currentSession.teacher?.user?.name?.charAt(0)?.toUpperCase() || 'T'}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-900">{session.teacher?.user?.name}</p>
+                    <p className="text-xs font-bold text-gray-900">{currentSession.teacher?.user?.name}</p>
                     <p className="text-[10px] font-bold text-gray-400">{t('teacherLabel')}</p>
                   </div>
                 </div>
@@ -338,7 +399,7 @@ export default function EditSessionModal({ isOpen, onClose, session, onSave }: E
           <button 
             type="submit"
             onClick={handleSubmit}
-            className="flex-1 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl transition-all shadow-[0_10px_20px_-5px_rgba(79,70,229,0.3)] active:scale-95"
+            className="flex-1 px-8 py-3 bg-primary hover:bg-primary text-white text-xs font-bold rounded-2xl transition-all shadow-[0_10px_20px_-5px_rgba(79,70,229,0.3)] active:scale-95"
           >
             {t('saveChanges')}
           </button>

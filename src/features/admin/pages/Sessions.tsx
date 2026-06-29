@@ -53,6 +53,7 @@ export default function Sessions() {
       setSelectedSession(null);
     } catch (error) {
       console.error("Update session failed:", error);
+      throw error;
     }
   };
 
@@ -99,9 +100,9 @@ export default function Sessions() {
           teacherId: formData.teacher,
           subject_id: formData.subject,
           title: formData.title,
-          description: formData.description || "",
+          ...(!formData.description ? {} : { description: formData.description }),
+          ...(!formData.notes ? {} : { notes: formData.notes }),
           link: formData.meetingLink || "",
-          notes: formData.notes || "",
           startTime: sessions[0]?.time || "00:00",
           days: selectedDays,
           startDate,
@@ -120,9 +121,9 @@ export default function Sessions() {
           teacherId: data.teacher,
           subject_id: data.subject,
           title: data.title,
-          description: data.description || "",
+          ...(!data.description ? {} : { description: data.description }),
+          ...(!data.notes ? {} : { notes: data.notes }),
           link: data.meetingLink || "",
-          notes: data.notes || "",
           start_time: localDate.toISOString(),
           // type: data.type,
           notification_Time: data.notification_Time,
@@ -284,9 +285,9 @@ export default function Sessions() {
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
       case "scheduled":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-primary-50 text-blue-700 border-blue-200";
       case "planned":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-primary-50 text-blue-700 border-blue-200";
       case "completed":
         return "bg-green-50 text-green-700 border-green-200";
       case "cancelled":
@@ -437,7 +438,7 @@ export default function Sessions() {
                         {session.title}
                       </span>
                       {/* {(session.is_recurring || session.parent_recurring_id) && (
-                          <span title={language === 'ar' ? 'جلسة متكررة' : 'Recurring Session'} className="flex items-center justify-center p-1 bg-indigo-50 text-indigo-500 rounded text-xs">
+                          <span title={language === 'ar' ? 'جلسة متكررة' : 'Recurring Session'} className="flex items-center justify-center p-1 bg-primary-50 text-indigo-500 rounded text-xs">
                             <RefreshCw className="w-3 h-3" />
                           </span>
                        )} */}
@@ -506,6 +507,14 @@ export default function Sessions() {
                       </button>
                       <button
                         onClick={() => {
+                          const grouped = session.parent_recurring_id
+                            ? scheduleData.filter(
+                                (s: Schedule) =>
+                                  s.parent_recurring_id ===
+                                  session.parent_recurring_id,
+                              )
+                            : [session];
+                          setGroupedSessions(grouped);
                           setSelectedSession(session);
                           setShowEditModal(true);
                         }}
@@ -553,6 +562,11 @@ export default function Sessions() {
         }}
         session={selectedSession}
         groupedSessions={groupedSessions}
+        onEditSession={(s) => {
+          setShowViewModal(false);
+          setSelectedSession(s);
+          setShowEditModal(true);
+        }}
       />
 
       <EditSessionModal
@@ -562,6 +576,7 @@ export default function Sessions() {
           setSelectedSession(null);
         }}
         session={selectedSession}
+        groupedSessions={groupedSessions}
         onSave={handleUpdateSession}
       />
 

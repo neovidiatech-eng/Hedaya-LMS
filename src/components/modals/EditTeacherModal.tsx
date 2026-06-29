@@ -1,13 +1,14 @@
-import { X, Users, Eye, EyeOff, Lock } from 'lucide-react';
+import { X, Users, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from '../ui/CustomSelect';
-import { TeacherFormData, getTeacherSchema } from '../../lib/schemas/TeacherSchema';
+import { TeacherFormData, getEditTeacherSchema } from '../../lib/schemas/TeacherSchema';
 import { Controller, Resolver, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Teacher } from '../../types/teachers';
 import { useCurrency } from '../../features/admin/hooks/useCurrency';
 import { useSubjects } from '../../features/admin/hooks/useSubjects';
+import { useTeacherById } from '../../features/admin/hooks/useTeacher';
 import { CustomCheckbox } from '../ui/CustomCheckbox';
 import { DEFAULT_COUNTRIES } from '../../consts/countries';
 
@@ -25,8 +26,10 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
   const { data: currenciesData } = useCurrency();
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
 
-  const { register, handleSubmit, setValue, watch, control, reset, formState: { errors }, } = useForm<TeacherFormData>({
-    resolver: zodResolver(getTeacherSchema(t)) as Resolver<TeacherFormData>,
+  const { data: fetchedTeacher, isLoading: isFetchingTeacher } = useTeacherById(isOpen && teacher ? teacher.id : undefined);
+
+  const { register, handleSubmit, setValue, watch, control, reset, formState: { errors, isSubmitting }, } = useForm<TeacherFormData>({
+    resolver: zodResolver(getEditTeacherSchema(t)) as Resolver<TeacherFormData>,
   });
 
   const currencyOptions = useMemo(() => {
@@ -38,32 +41,34 @@ export default function EditTeacherModal({ isOpen, onClose, onSubmit, teacher }:
   }, [currenciesData, language]);
 
   useEffect(() => {
-    if (teacher) {
-      console.log("==> EditTeacherModal Mount:", teacher);
+    if (!isOpen || isSubmitting) return;
+    const currentTeacher = fetchedTeacher || teacher;
+    if (currentTeacher) {
+      console.log("==> EditTeacherModal Mount:", currentTeacher);
 
       // Extract subject IDs directly from the API response
-      const subjectsArray = teacher.teacherSubjects || [];
+      const subjectsArray = currentTeacher.teacherSubjects || [];
       const subjectIds = subjectsArray.map((s: any) => String(s.subjectId || s.subject?.id)).filter(Boolean);
 
-      const currencyId = teacher.currencyId || '';
+      const currencyId = currentTeacher.currencyId || '';
 
       console.log("==> Extracted Data:", { subjectIds, currencyId });
 
       reset({
-        name: teacher.user?.name || '',
-        email: teacher.user?.email || '',
-        phone: teacher.user?.phone || '',
-        phone_code: teacher.user?.code_country || '+20',
-        password: '',
-        hourlyRate: teacher.hour_price || 0,
+        name: currentTeacher.user?.name || '',
+        email: currentTeacher.user?.email || '',
+        phone: currentTeacher.user?.phone || '',
+        phone_code: currentTeacher.user?.code_country || '+20',
+        password: currentTeacher.user?.password || '',
+        hourlyRate: currentTeacher.hour_price || 0,
         currency: currencyId,
-        gender: (teacher.gender?.toLowerCase() as 'male' | 'female') || 'male',
-        status: teacher.active ? 'active' : 'inactive',
+        gender: (currentTeacher.gender?.toLowerCase() as 'male' | 'female') || 'male',
+        status: currentTeacher.active ? 'active' : 'inactive',
         subjects: subjectIds,
-        meeting_link: teacher.meeting_link || '',
+        meeting_link: currentTeacher.meeting_link || '',
       });
     }
-  }, [teacher, reset]);
+  }, [teacher, fetchedTeacher, reset]);
 
   const handleOnSubmit = async (data: TeacherFormData) => {
   try {
@@ -125,6 +130,7 @@ const handleClose = () => {
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Users className="w-6 h-6" />
             <span>{t('editTeacher')}</span>
+            {isFetchingTeacher && <Loader2 className="w-5 h-5 animate-spin ml-2" />}
           </h2>
           <button type="button" onClick={handleClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/80" />

@@ -26,3 +26,11 @@ password: z
 });
 
 export type StudentFormData = z.infer<ReturnType<typeof getStudentSchema>>;
+
+export const getEditStudentSchema = (t: TFunc) => getStudentSchema(t).extend({
+  password: z.string().min(8, t("validation.passwordMin", { count: 8 }))
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]+$/,
+      t("validation.passwordComplex")
+    ).optional().or(z.literal('')),
+});
