@@ -21,7 +21,8 @@ export const requestForToken = async () => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const configParam = encodeURIComponent(JSON.stringify(firebaseConfig));
+      const registration = await navigator.serviceWorker.register(`/firebase-messaging-sw.js?config=${configParam}`);
       await navigator.serviceWorker.ready; // Wait until the SW is active
 
       const currentToken = await getToken(messaging, { 
