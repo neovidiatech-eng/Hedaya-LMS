@@ -226,7 +226,9 @@ export default function Dashboard() {
                       className="hover:bg-gray-50/50 transition-colors duration-150"
                     >
                       <td className="py-4 font-bold text-gray-800">
-                        {session.subject || session.title}
+                        {typeof session.subject === 'object' && session.subject !== null
+                          ? (i18n.language === 'ar' ? session.subject.name_ar : session.subject.name_en)
+                          : (session.subject || session.title)}
                       </td>
 
                       <td className="py-4 text-gray-600 font-medium">

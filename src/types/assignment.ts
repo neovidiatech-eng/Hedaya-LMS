@@ -63,7 +63,10 @@ export interface HomeworkResponse {
   message: string;
   status: number;
   lang: string;
-  data: Homework[];
+  data: {
+    items: Homework[];
+    pagination: Pagination;
+  };
 }
 
 export interface AdminAssignmentsResponse {

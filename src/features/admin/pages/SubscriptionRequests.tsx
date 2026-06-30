@@ -114,6 +114,7 @@ export default function SubscriptionRequests() {
           requestDate: typeof item.createdAt === 'string' ? item.createdAt.split("T")[0] : "—",
           rawRequestDate: typeof item.createdAt === 'string' ? item.createdAt : "",
           status: item.status,
+          notes: item.user?.notes || "",
         }));
         setRequests(formatted);
       } catch (error) {

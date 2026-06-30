@@ -25,10 +25,20 @@ export interface SessionPerDay {
   count: number;
 }
 
+export interface UpcomingSessionSubject {
+  id: string;
+  name_en: string;
+  name_ar: string;
+  active: boolean;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UpcomingSession {
   id: string;
   title: string;
-  subject: string;
+  subject: UpcomingSessionSubject | string;
   time: string;
   teacher: string;
   student: string;

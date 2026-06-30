@@ -23,6 +23,7 @@ export const getRegisterSchema = (t: (key: string, options?: any) => string) =>
     t("validation.passwordComplex")
   ),
     plan_id: z.string().min(1, t("validation.required")),
+    notes: z.string().optional(),
     timezone: z.string().optional(),
   });
 

@@ -26,6 +26,7 @@ export default function Students() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedGrade, setSelectedGrade] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState('all');
+  const [sessionsRemainingFilter, setSessionsRemainingFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -51,13 +52,42 @@ export default function Students() {
     planId: selectedGrade !== 'all' ? selectedGrade : undefined,
   }), [currentPage, itemsPerPage, debouncedSearch, selectedCountry, selectedGrade]);
 
+  // When sessions filter is active, fetch ALL students (no pagination) to filter across all pages
+  const allStudentsQueryParams = useMemo(() => ({
+    limit: 1000,
+    search: debouncedSearch || undefined,
+    country: selectedCountry !== 'all' ? selectedCountry : undefined,
+    planId: selectedGrade !== 'all' ? selectedGrade : undefined,
+  }), [debouncedSearch, selectedCountry, selectedGrade]);
+
   const { data: apiResponse, isLoading } = useStudents(studentsQueryParams);
+  const { data: allStudentsResponse, isLoading: isLoadingAll } = useStudents(
+    sessionsRemainingFilter !== 'all' ? allStudentsQueryParams : {}
+  );
   const {data: plansData} = usePlans();
 
   const plans = plansData?.length;
 
   const rawData: any = apiResponse?.data.studentsData;
-  const studentsList: Student[] = Array.isArray(rawData) ? rawData : (rawData?.students || rawData?.data || []);
+  const pagedStudents: Student[] = Array.isArray(rawData) ? rawData : (rawData?.students || rawData?.data || []);
+
+  const allRawData: any = allStudentsResponse?.data.studentsData;
+  const allFetchedStudents: Student[] = Array.isArray(allRawData) ? allRawData : (allRawData?.students || allRawData?.data || []);
+
+  const studentsList: Student[] = useMemo(() => {
+    if (sessionsRemainingFilter === 'all') return pagedStudents;
+    // filter across ALL students (not just current page)
+    return allFetchedStudents.filter((student) => {
+      const remaining = Number(student.sessions_remaining) || 0;
+      switch (sessionsRemainingFilter) {
+        case '0':    return remaining === 0;
+        case '1-5':  return remaining >= 1 && remaining <= 5;
+        case '6-10': return remaining >= 6 && remaining <= 10;
+        case '10+':  return remaining > 10;
+        default:     return true;
+      }
+    });
+  }, [pagedStudents, allFetchedStudents, sessionsRemainingFilter]);
   const pagination = apiResponse?.data?.pagination;
   const totalItems = pagination?.totalItems ?? 0;
   const totalPages = pagination?.totalPages ?? 1;
@@ -124,7 +154,7 @@ export default function Students() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, selectedGrade, selectedCountry]);
+  }, [debouncedSearch, selectedGrade, selectedCountry, sessionsRemainingFilter]);
 
 
   const handlePageChange = (page: number) => {
@@ -220,7 +250,7 @@ export default function Students() {
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -260,12 +290,28 @@ export default function Students() {
               className="h-[46px]"
             />
           </div>
+
+          {/* Sessions Remaining Filter */}
+          <div>
+            <CustomSelect
+              value={sessionsRemainingFilter}
+              options={[
+                { value: 'all',  label: language === 'ar' ? 'كل الحصص المتبقية' : 'All Remaining Sessions' },
+                { value: '0',    label: language === 'ar' ? 'لا يوجد حصص (0)' : 'No Sessions (0)' },
+                { value: '1-5',  label: language === 'ar' ? 'من 1 إلى 5 حصص' : '1 – 5 Sessions' },
+                { value: '6-10', label: language === 'ar' ? 'من 6 إلى 10 حصص' : '6 – 10 Sessions' },
+                { value: '10+',  label: language === 'ar' ? 'أكثر من 10 حصص' : 'More than 10 Sessions' },
+              ]}
+              onChange={(val) => setSessionsRemainingFilter(val as string)}
+              className="h-[46px]"
+            />
+          </div>
         </div>
       </div>
 
       {/* Students Table Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {isLoading ? (
+        {isLoading || (sessionsRemainingFilter !== 'all' && isLoadingAll) ? (
           <TableSkeleton rows={itemsPerPage} columns={7} />
         ) : (
           <div className="overflow-x-auto">

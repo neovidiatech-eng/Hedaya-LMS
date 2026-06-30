@@ -48,6 +48,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
       country: "",
       password: "",
       plan_id: planIdFromUrl,
+      notes: "",
     },
   });
 
@@ -432,6 +433,19 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
                 {errors.plan_id.message}
               </p>
             )}
+          </div>
+
+          {/* Notes */}
+          <div className="text-start">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              {language === "ar" ? "ملاحظات" : "Notes"}
+            </label>
+            <textarea
+              {...register("notes")}
+              placeholder={language === "ar" ? "اكتب أي ملاحظات إضافية هنا..." : "Write any additional notes here..."}
+              rows={3}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all focus:ring-4 focus:ring-primary/10 focus:border-primary hover:border-slate-300 font-medium resize-none text-slate-700 placeholder:text-slate-400"
+            />
           </div>
 
           {/* Submit Button */}
