@@ -438,7 +438,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
           {/* Notes */}
           <div className="text-start">
             <label className="block text-sm font-semibold text-slate-700 mb-2">
-              {language === "ar" ? "ملاحظات" : "Notes"}
+              {language === "ar" ? "ملاحظات (تاريخ البداية والمواعيد إن أمكن)" : "Notes (Start Date & Times If Possible)"}
             </label>
             <textarea
               {...register("notes")}
