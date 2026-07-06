@@ -86,8 +86,10 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
 
   const onSubmit = async (data: RegisterInput) => {
     try {
+      const { notes, ...restData } = data;
       const registrationData = {
-        ...data,
+        ...restData,
+        ...(notes && notes.trim() !== "" ? { notes } : {}),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
       const result = await registerService(registrationData);
