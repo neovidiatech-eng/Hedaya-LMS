@@ -3,18 +3,18 @@ import { Select } from 'antd';
 import type { SelectProps } from 'antd';
 
 // تعريف الـ Props التي سيقبلها المكون
-export interface CustomSelectProps extends SelectProps {
+export interface CustomSelectProps extends SelectProps<any> {
   label?: string;
   error?: string;
   options: { value: string | number; label: React.ReactNode; searchText?: string }[];
 }
 
-const CustomSelect = forwardRef<any, CustomSelectProps>(({ 
-  label, 
-  error, 
-  options, 
-  className, 
-  ...props 
+const CustomSelect = forwardRef<any, CustomSelectProps>(({
+  label,
+  error,
+  options,
+  className,
+  ...props
 }, ref) => {
   return (
     <div className="w-full flex flex-col gap-1 text-start">
@@ -33,11 +33,11 @@ const CustomSelect = forwardRef<any, CustomSelectProps>(({
         listHeight={240}
         virtual={false}
         placeholder="اختر من القائمة"
-        {...props} 
+        {...props}
       >
         {options.map((option) => (
-          <Select.Option 
-            key={option.value} 
+          <Select.Option
+            key={option.value}
             value={option.value}
             searchText={option.searchText || String(option.value)}
             label={option.searchText || option.label}

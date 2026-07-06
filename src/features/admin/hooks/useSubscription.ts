@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { getSubscription, renewSubscription } from "../services/SubscriptionServices";
+import { getSubscription, GetSubscriptionParams, renewSubscription } from "../services/SubscriptionServices";
 
-export const useSubscription = () => {
+export const useSubscription = (params?: GetSubscriptionParams) => {
     return useQuery({
-        queryKey: ["subscription"],
-        queryFn: getSubscription,
+        queryKey: ["subscription", params],
+        queryFn: () => getSubscription(params),
     });
 }
 

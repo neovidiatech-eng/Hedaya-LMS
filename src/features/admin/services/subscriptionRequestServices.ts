@@ -1,24 +1,8 @@
 import api from "../../../lib/axios";
-
-export interface SubscriptionRequestApi {
-  id: string;
-  user: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-  plan: {
-    name_ar: string;
-    name_en: string;
-    price: string;
-    sessionsCount: number;
-  };
-  createdAt: string;
-  status: "pending" | "approved" | "rejected";
-}
+import type { SubscriptionRequestsResponse } from "../../../types/subscriptionRequests";
 
 export const getSubscriptionRequests = async () => {
-  const response = await api.get("/subscription/requests");
+  const response = await api.get<SubscriptionRequestsResponse>("/subscription/requests");
   const data = response.data.data;
   console.log(data);
 

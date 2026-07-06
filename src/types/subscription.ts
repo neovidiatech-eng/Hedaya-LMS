@@ -65,7 +65,19 @@ export interface SubscriptionData {
     currency: Currency;
 }
 
+export interface PaginatedSubscriptionsData {
+    subscriptionsData: SubscriptionData[];
+    pendingSubscriptions: number;
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+}
+
 export interface ApiResponse {
-    success: boolean;
-    data: SubscriptionData[];
+    message: string;
+    status: number;
+    lang: string;
+    data: PaginatedSubscriptionsData;
 }
