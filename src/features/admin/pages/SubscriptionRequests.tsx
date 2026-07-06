@@ -7,41 +7,19 @@ import ViewSubscriptionRequestModal from "../../../components/modals/ViewSubscri
 import CustomSelect from "../../../components/ui/CustomSelect";
 import { TableSkeleton } from "../../../components/ui/CustomSkeleton";
 import { hasPermission } from "../../../utils/auth";
-import {
-  changeSubscriptionRequestStatus,
-  getSubscriptionRequests,
-} from "../services/subscriptionRequestServices";
 
-interface SubscriptionRequest {
-  id: string;
-  studentName: string;
-  parentName: string;
-  phone: string;
-  email: string;
-   plan: {
-    name: string;
-    price: number;
-    sessionsCount: number;
-  };
-  requestDate: string;
-  rawRequestDate: string;
-  status: "pending" | "approved" | "rejected";
-  notes?: string;
-}
+import { useChangeSubscriptionRequestStatus, useSubscribtionRequest } from "../hooks/useSubscribtionRequest";
+import { SubscriptionRequest, SubscriptionStatus } from "../../../types/subscriptionRequests";
 
 export default function SubscriptionRequests() {
   const { language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "pending" | "approved" | "rejected"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<SubscriptionStatus | "all">("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] =
-    useState<SubscriptionRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<SubscriptionRequest | null>(null);
   const itemsPerPage = 10;
   const canUpdateSubscriptionRequests = hasPermission("subscriptions", [
     "update",
@@ -88,52 +66,54 @@ export default function SubscriptionRequests() {
     requests: { ar: "طلب", en: "requests" },
   };
 
-  const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
+  // const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getSubscriptionRequests();
-        if (!Array.isArray(data)) {
-          console.error("Invalid data:", data);
-          return;
-        }
+  // useEffect(() => {
+  //   const fetchRequests = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       const data = await getSubscriptionRequests();
+  //       if (!Array.isArray(data)) {
+  //         console.error("Invalid data:", data);
+  //         return;
+  //       }
 
-        const formatted = data.map((item: any) => ({
-          id: item.id,
-          studentName: typeof item.user?.name === 'string' ? item.user.name : "—",
-          parentName: typeof item.user?.name === 'string' ? item.user.name : "—",
-          phone: typeof item.user?.phone === 'string' ? item.user.phone : "—",
-          email: typeof item.user?.email === 'string' ? item.user.email : "—",
-          plan: {
-            name: item.plan?.name_ar || item.plan?.name_en || "—",
-            price: item.plan?.price || 0,
-            sessionsCount: typeof item.plan?.sessionsCount === 'number' ? item.plan.sessionsCount : 0,
-          },
-          requestDate: typeof item.createdAt === 'string' ? item.createdAt.split("T")[0] : "—",
-          rawRequestDate: typeof item.createdAt === 'string' ? item.createdAt : "",
-          status: item.status,
-          notes: item.user?.notes || "",
-        }));
-        setRequests(formatted);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       const formatted = data.map((item: any) => ({
+  //         id: item.id,
+  //         studentName: typeof item.user?.name === 'string' ? item.user.name : "—",
+  //         parentName: typeof item.user?.name === 'string' ? item.user.name : "—",
+  //         phone: typeof item.user?.phone === 'string' ? item.user.phone : "—",
+  //         email: typeof item.user?.email === 'string' ? item.user.email : "—",
+  //         plan: {
+  //           name: item.plan?.name_ar || item.plan?.name_en || "—",
+  //           price: item.plan?.price || 0,
+  //           sessionsCount: typeof item.plan?.sessionsCount === 'number' ? item.plan.sessionsCount : 0,
+  //         },
+  //         requestDate: typeof item.createdAt === 'string' ? item.createdAt.split("T")[0] : "—",
+  //         rawRequestDate: typeof item.createdAt === 'string' ? item.createdAt : "",
+  //         status: item.status,
+  //         notes: item.user?.notes || "",
+  //       }));
+  //       setRequests(formatted);
+  //     } catch (error) {
+  //       console.log(error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchRequests();
-  }, []);
+  //   fetchRequests();
+  // }, []);
 
-  const filteredRequests = requests.filter((request) => {
+  const { data, isLoading } = useSubscribtionRequest();
+  const { mutate: changeStatus } = useChangeSubscriptionRequestStatus();
+
+  const filteredRequests = (data || []).filter((request) => {
     const matchesSearch =
-      request.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.parentName.toLowerCase().includes(searchTerm.toLowerCase());
+      request.user.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus =
       statusFilter === "all" || request.status === statusFilter;
-    const requestDate = new Date(request.rawRequestDate);
+    const requestDate = new Date(request.createdAt);
     const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
     const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
     const matchesFromDate = !from || requestDate >= from;
@@ -149,6 +129,8 @@ export default function SubscriptionRequests() {
     startIndex + itemsPerPage,
   );
 
+
+
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "pending":
@@ -163,29 +145,11 @@ export default function SubscriptionRequests() {
   };
 
   const handleApprove = async (id: string) => {
-    if (!canUpdateSubscriptionRequests) return;
-
-    try {
-      await changeSubscriptionRequestStatus(id, "approved");
-      setRequests((prev) =>
-        prev.map((req) => (req.id === id ? { ...req, status: "approved" } : req))
-      );
-    } catch (error) {
-      console.log(error);
-    }
+    changeStatus({ id, status: "approved" });
   };
 
   const handleReject = async (id: string) => {
-    if (!canUpdateSubscriptionRequests) return;
-
-    try {
-      await changeSubscriptionRequestStatus(id, "rejected");
-      setRequests((prev) =>
-        prev.map((req) => (req.id === id ? { ...req, status: "rejected" } : req))
-      );
-    } catch (error) {
-      console.log(error);
-    }
+    changeStatus({ id, status: "rejected" });
   };
 
   const handleView = (request: SubscriptionRequest) => {
@@ -222,7 +186,7 @@ export default function SubscriptionRequests() {
               value={statusFilter}
               onChange={(value) => {
                 setStatusFilter(
-                  value as "all" | "pending" | "approved" | "rejected"
+                  value as SubscriptionStatus | "all"
                 );
                 setCurrentPage(1);
               }}
@@ -329,16 +293,16 @@ export default function SubscriptionRequests() {
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-4 text-start text-sm font-medium text-gray-900">
-                      {request.studentName}
+                      {request.user.name}
                     </td>
                     <td className="px-4 py-4 text-start text-sm text-gray-600" dir="ltr">
-                      <WhatsAppPhone phone={request.phone} />
+                      <WhatsAppPhone phone={request.user.phone} />
                     </td>
                     <td className="px-4 py-4 text-start text-sm text-gray-600" dir="ltr">
-                      {request.email}
+                      {request.user.email}
                     </td>
                     <td className="px-4 py-4 text-start text-sm text-gray-900">
-                      {request.plan.name}
+                      {language === "ar" ? request.plan.name_ar : request.plan.name_en}
                     </td>
                     <td className="px-4 py-4 text-start text-sm font-semibold text-gray-900">
                       {request.plan.price}
@@ -349,7 +313,7 @@ export default function SubscriptionRequests() {
                       
                     </td>
                     <td className="px-4 py-4 text-start text-sm text-gray-900">
-                      {request.requestDate}
+                      {request.createdAt}
                     </td>
                     <td className="px-4 py-4 text-start">
                       <span

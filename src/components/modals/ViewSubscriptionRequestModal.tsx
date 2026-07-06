@@ -1,22 +1,7 @@
 import { X } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import WhatsAppPhone from '../ui/WhatsAppPhone';
-
-interface SubscriptionRequest {
-  id: string;
-  studentName: string;
-  parentName: string;
-  phone: string;
-  email: string;
-  plan: {
-    name: string;
-    price: number;
-    sessionsCount: number;
-  };
-  requestDate: string;
-  status: 'pending' | 'approved' | 'rejected';
-  notes?: string;
-}
+import { SubscriptionRequest } from '../../types/subscriptionRequests';
 
 interface ViewSubscriptionRequestModalProps {
   isOpen: boolean;
@@ -46,6 +31,7 @@ export default function ViewSubscriptionRequestModal({ isOpen, onClose, request 
     pending: { ar: 'قيد الانتظار', en: 'Pending' },
     approved: { ar: 'مقبول', en: 'Approved' },
     rejected: { ar: 'مرفوض', en: 'Rejected' },
+    all: { ar: 'الكل', en: 'All' },
     noNotes: { ar: 'لا توجد ملاحظات', en: 'No notes' }
   };
 
@@ -81,35 +67,35 @@ export default function ViewSubscriptionRequestModal({ isOpen, onClose, request 
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.studentName[language]}
               </label>
-              <p className="text-gray-900 text-lg">{request.studentName}</p>
+              <p className="text-gray-900 text-lg">{request.user.name}</p>
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.parentName[language]}
               </label>
-              <p className="text-gray-900 text-lg">{request.parentName}</p>
-            </div>
+              <p className="text-gray-900 text-lg">{request.user.parentName}</p>
+            </div> */}
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.phone[language]}
               </label>
-              <WhatsAppPhone phone={request.phone} className="text-lg" />
+              <WhatsAppPhone phone={request.user.phone} className="text-lg" />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.email[language]}
               </label>
-              <p className="text-gray-900 text-lg" dir="ltr">{request.email}</p>
+              <p className="text-gray-900 text-lg" dir="ltr">{request.user.email}</p>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.plan[language]}
               </label>
-              <p className="text-gray-900 text-lg">{request.plan.name}</p>
+              <p className="text-gray-900 text-lg">{language === "ar" ? request.plan.name_ar : request.plan.name_en}</p>
             </div>
 
             <div>
@@ -132,7 +118,7 @@ export default function ViewSubscriptionRequestModal({ isOpen, onClose, request 
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.requestDate[language]}
               </label>
-              <p className="text-gray-900 text-lg">{request.requestDate}</p>
+              <p className="text-gray-900 text-lg">{request.createdAt}</p>
             </div>
 
             <div>
@@ -145,18 +131,18 @@ export default function ViewSubscriptionRequestModal({ isOpen, onClose, request 
             </div>
           </div>
 
-          {request.notes && (
+          {request.user.notes && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.notes[language]}
               </label>
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-gray-900">{request.notes}</p>
+                <p className="text-gray-900">{request.user.notes}</p>
               </div>
             </div>
           )}
 
-          {!request.notes && (
+          {!request.user.notes && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.notes[language]}
