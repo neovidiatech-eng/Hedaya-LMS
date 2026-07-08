@@ -47,6 +47,18 @@ export default function Sessions() {
     return now >= oneMinuteBefore && now <= end;
   };
 
+  const isEndable = (startTime: string, endTime: string) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const fifteenMinsAfterStart = new Date(start.getTime() + 15 * 60000);
+    return now >= fifteenMinsAfterStart && now <= end;
+  };
+
+  const isRequestable = (startTime: string) => {
+    const start = new Date(startTime);
+    return now < start;
+  };
+
   const { data: sessionResponse, isLoading } = useUserSessions(debouncedSearch);
   const { mutateAsync: joinToSession, isPending: isJoining } = useJoinToSession();
   useEffect(() => {
@@ -312,8 +324,8 @@ export default function Sessions() {
                               console.log(error);
                             }
                           }}
-                          disabled={session.status?.toLowerCase() === 'completed'}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${session.status?.toLowerCase() === 'completed'
+                          disabled={session.status?.toLowerCase() === 'completed' || !isEndable(session.start_time, session.end_time)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(session.status?.toLowerCase() === 'completed' || !isEndable(session.start_time, session.end_time))
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
                           }`}
@@ -329,13 +341,13 @@ export default function Sessions() {
                             setSessionForRequest(session);
                             setIsRequestModalOpen(true);
                           }}
-                          disabled={session.status?.toLowerCase() === 'completed'}
+                          disabled={session.status?.toLowerCase() === 'completed' || !isRequestable(session.start_time)}
                           className={`flex items-center gap-2 px-3 py-2 rounded-xl font-normal transition-all shadow-sm hover:shadow-md ${
-                            session.status?.toLowerCase() === 'completed' 
+                            (session.status?.toLowerCase() === 'completed' || !isRequestable(session.start_time))
                               ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
                               : 'text-white hover:opacity-90'
                           }`}
-                          style={session.status?.toLowerCase() === 'completed' ? {} : { backgroundColor: settings.primaryColor }}
+                          style={(session.status?.toLowerCase() === 'completed' || !isRequestable(session.start_time)) ? {} : { backgroundColor: settings.primaryColor }}
                         >
                           <Plus className="w-5 h-5" />
                           {isRtl ? 'طلب جديد' : 'Add Request'}
