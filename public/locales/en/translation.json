@@ -630,5 +630,8 @@
   "noWithdrawalsInPeriod": "No withdrawals found for this period",
   "unknownStatus": "Unknown",
   "pleaseSelectDateRange": "Please select a date range and click \"Apply Filter\" to view data",
-  "approved": "Approved"
+  "approved": "Approved",
+  "exporting": "Exporting...",
+  "teachersExportedSuccessfully": "Teachers exported successfully",
+  "teachersExportError": "Failed to export teachers data"
 }

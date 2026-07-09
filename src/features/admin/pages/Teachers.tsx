@@ -13,6 +13,7 @@ import { TeacherFormData } from '../../../lib/schemas/TeacherSchema';
 import { useCurrency } from '../hooks/useCurrency';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
+import { message } from 'antd';
 
 const AddTeacherModal = lazy(() => import('../../../components/modals/AddTeacherModal'));
 const ViewTeacherModal = lazy(() => import('../../../components/modals/ViewTeacherModal'));
@@ -56,8 +57,10 @@ export default function Teachers() {
   const handleExport = async () => {
     try {
       await exportTeachersMutation.mutateAsync()
+      message.success(t('teachersExportedSuccessfully'));
     } catch (error) {
       console.error("Error in export flow", error)
+      message.error(t('teachersExportError'));
     }
   }
   // Bulletproof data extraction
@@ -239,14 +242,14 @@ export default function Teachers() {
           </p>
         </div>
         <div className='flex flex-row gap-3'>
-          <button 
+          <button
             onClick={handleExport}
             disabled={exportTeachersMutation.isPending}
             className="flex items-center gap-2 btn-primary text-white px-6 py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="w-5 h-5" />
             <span className="font-medium">
-              {exportTeachersMutation.isPending ? 'جاري التحميل...' : t('export')}
+              {exportTeachersMutation.isPending ? t('exporting') : t('export')}
             </span>
           </button>
           <button
@@ -418,7 +421,7 @@ export default function Teachers() {
                           >
                             <Eye className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                           </button>
-                         
+
                           <button
                             onClick={() => handleEditTeacher(teacher)}
                             className="p-2 hover:bg-primary-light rounded-lg transition-colors group"
@@ -439,8 +442,8 @@ export default function Teachers() {
                             title={t('delete')}
                           >
                             <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-600" />
-                          </button> 
-                          
+                          </button>
+
                         </div>
                       </td>
                     </tr>

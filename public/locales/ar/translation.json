@@ -629,5 +629,8 @@
   "noWithdrawalsInPeriod": "لا توجد عمليات السحب في هذه الفترة",
   "unknownStatus": "غير معروف",
   "pleaseSelectDateRange": "يرجى تحديد مدة زمنية والضغط على \"تطبيق الفلتر\" لعرض البيانات",
-  "approved": "مقبول"
+  "approved": "مقبول",
+  "exporting": "جاري التحميل...",
+  "teachersExportedSuccessfully": "تم تصدير بيانات المعلمين بنجاح",
+  "teachersExportError": "حدث خطأ أثناء تصدير بيانات المعلمين"
 }
