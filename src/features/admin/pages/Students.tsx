@@ -32,7 +32,7 @@ export default function Students() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-    const [copiedPasswordId, setCopiedPasswordId] = useState<string | null>(null);
+  const [copiedPasswordId, setCopiedPasswordId] = useState<string | null>(null);
 
   const itemsPerPage = 7;
 
@@ -64,7 +64,7 @@ export default function Students() {
   const { data: allStudentsResponse, isLoading: isLoadingAll } = useStudents(
     sessionsRemainingFilter !== 'all' ? allStudentsQueryParams : {}
   );
-  const {data: plansData} = usePlans();
+  const { data: plansData } = usePlans();
 
   const plans = plansData?.length;
 
@@ -77,14 +77,13 @@ export default function Students() {
   const studentsList: Student[] = useMemo(() => {
     if (sessionsRemainingFilter === 'all') return pagedStudents;
     // filter across ALL students (not just current page)
+    const remainingSessions = sessionsRemainingFilter === '' ? "needs_renewal" : sessionsRemainingFilter;
     return allFetchedStudents.filter((student) => {
       const remaining = Number(student.sessions_remaining) || 0;
-      switch (sessionsRemainingFilter) {
-        case '0':    return remaining === 0;
-        case '1-5':  return remaining >= 1 && remaining <= 5;
-        case '6-10': return remaining >= 6 && remaining <= 10;
-        case '10+':  return remaining > 10;
-        default:     return true;
+      switch (remainingSessions) {
+        case 'needs_renewal': return student.sessions_filter === 'needs_renewal';
+        case 'has_remaining': return student.sessions_filter === 'has_remaining';
+        default: return true;
       }
     });
   }, [pagedStudents, allFetchedStudents, sessionsRemainingFilter]);
@@ -181,7 +180,7 @@ export default function Students() {
     setSelectedStudent(null);
   };
 
-   const handleCopyPassword = (userId: string, password: string) => {
+  const handleCopyPassword = (userId: string, password: string) => {
     navigator.clipboard.writeText(password);
     setCopiedPasswordId(userId);
     setTimeout(() => setCopiedPasswordId(null), 2000);
@@ -296,11 +295,8 @@ export default function Students() {
             <CustomSelect
               value={sessionsRemainingFilter}
               options={[
-                { value: 'all',  label: language === 'ar' ? 'كل الحصص المتبقية' : 'All Remaining Sessions' },
-                { value: '0',    label: language === 'ar' ? 'لا يوجد حصص (0)' : 'No Sessions (0)' },
-                { value: '1-5',  label: language === 'ar' ? 'من 1 إلى 5 حصص' : '1 – 5 Sessions' },
-                { value: '6-10', label: language === 'ar' ? 'من 6 إلى 10 حصص' : '6 – 10 Sessions' },
-                { value: '10+',  label: language === 'ar' ? 'أكثر من 10 حصص' : 'More than 10 Sessions' },
+                { value: 'needs_renewal', label: language === 'ar' ? 'يحتاج تجديد' : 'Needs Renewal' },
+                { value: 'has_remaining', label: language === 'ar' ? 'يوجد حصص متبقية' : 'Has Remaining Sessions' },
               ]}
               onChange={(val) => setSessionsRemainingFilter(val as string)}
               className="h-[46px]"
@@ -371,7 +367,7 @@ export default function Students() {
                         </div>
                       </td>
 
-  <td className="px-6 py-4">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2 group">
                           <span className="text-sm text-gray-600">{student.user?.password || '-'}</span>
                           {student.user?.password && (
@@ -463,7 +459,7 @@ export default function Students() {
             </table>
           </div>
 
-          
+
         )}
 
         {!isLoading && (

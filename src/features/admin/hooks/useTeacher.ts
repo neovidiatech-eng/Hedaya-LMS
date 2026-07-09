@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createTeacher, deleteTeacher, getTeacher, GetTeachersParams, getTeacherById, searchTeacher, updateTeacher } from "../services/TeacherServices"
-import { CreateTeacherInput , TeachersData, UpdateTeacherInput } from "../../../types/teachers"
+import { createTeacher, deleteTeacher, getTeacher, GetTeachersParams, getTeacherById, searchTeacher, updateTeacher, exportTeacher } from "../services/TeacherServices"
+import { CreateTeacherInput, TeachersData, UpdateTeacherInput } from "../../../types/teachers"
 import { message } from "antd"
 
 export const useTeacher = (paramsOrSearch?: string | GetTeachersParams) => {
@@ -54,3 +54,16 @@ export const useCreateTeacher = () => {
     });
 }
 
+export const useExportTeachers = ()=>{
+    return useMutation(
+        {
+            mutationFn:()=>exportTeacher(),onSuccess :() =>{
+                message.success('teachers exported successfully')
+            },
+            onError:(err)=>{
+                console.log(err)
+                  message.error('Failed to export teachers data');
+            }
+        }
+    )
+}

@@ -15,6 +15,25 @@ export interface TeacherSubject {
     };
 }
 
+export interface TeacherWallet {
+    id: string;
+    type: string;
+    ownerId: string;
+    balance: number;
+    createdAt: string;
+    updatedAt: string;
+    currencyId: string;
+    userId: string;
+}
+
+export interface TeacherWithdrawal {
+    id: string;
+    amount: number;
+    status: string;
+    createdAt: string;
+    [key: string]: any;
+}
+
 export interface Teacher {
     id: string;
     user_id: string;
@@ -34,9 +53,12 @@ export interface Teacher {
         code_country: string;
         status: string;
         confirmAt: string | null;
+        wallet?: TeacherWallet[];
     };
     teacherSubjects: TeacherSubject[];
     meeting_link?: string;
+    WithdrawalsResult?: TeacherWithdrawal[];
+    completedSessionsCount?: number;
 }
 
 export interface TeachersFetchResponse {
