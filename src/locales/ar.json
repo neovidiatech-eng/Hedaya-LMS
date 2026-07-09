@@ -450,5 +450,16 @@
   "searchPermissions": "ابحث بالاسم أو الكود أو النوع...",
   "addedSuccessfully": "تمت الإضافة بنجاح",
   "updatedSuccessfully": "تم التحديث بنجاح",
-  "noData": "لا توجد بيانات"
+  "noData": "لا توجد بيانات",
+  "teacherFinancials": "السجل المالي للمعلم",
+  "filterByDate": "تصفية حسب التاريخ",
+  "applyFilter": "تطبيق الفلتر",
+  "resetFilter": "إعادة ضبط",
+  "totalWalletBalance": "رصيد المحفظة الإجمالي",
+  "totalCompletedSessions": "إجمالي الحصص المكتملة",
+  "withdrawalsInPeriod": "عمليات السحب في هذه الفترة",
+  "noWithdrawalsInPeriod": "لا توجد عمليات السحب في هذه الفترة",
+  "unknownStatus": "غير معروف",
+  "pleaseSelectDateRange": "يرجى تحديد مدة زمنية والضغط على \"تطبيق الفلتر\" لعرض البيانات",
+  "approved": "مقبول"
 }

@@ -617,5 +617,20 @@
   "noLogs": "لا توجد سجلات حالياً",
   "logs": "السجلات",
   "endSession": "إنهاء الحصة",
-  "renewSubscription": "تجديد الاشتراك"
+  "renewSubscription": "تجديد الاشتراك",
+  "export": "تصدير",
+  "teacherFinancials": "السجل المالي للمعلم",
+  "filterByDate": "تصفية حسب التاريخ",
+  "applyFilter": "تطبيق الفلتر",
+  "resetFilter": "إعادة ضبط",
+  "totalWalletBalance": "رصيد المحفظة الإجمالي",
+  "totalCompletedSessions": "إجمالي الحصص المكتملة",
+  "withdrawalsInPeriod": "عمليات السحب في هذه الفترة",
+  "noWithdrawalsInPeriod": "لا توجد عمليات السحب في هذه الفترة",
+  "unknownStatus": "غير معروف",
+  "pleaseSelectDateRange": "يرجى تحديد مدة زمنية والضغط على \"تطبيق الفلتر\" لعرض البيانات",
+  "approved": "مقبول",
+  "exporting": "جاري التحميل...",
+  "teachersExportedSuccessfully": "تم تصدير بيانات المعلمين بنجاح",
+  "teachersExportError": "حدث خطأ أثناء تصدير بيانات المعلمين"
 }

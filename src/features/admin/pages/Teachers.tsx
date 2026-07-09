@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, lazy, useCallback } from 'react';
-import { Search, Eye, Pencil, Trash2, Plus, Users, UserCheck, UserX, Copy, Check } from 'lucide-react';
+import { Search, Eye, Pencil, Trash2, Plus, Users, UserCheck, Upload, UserX, Copy, Check, Receipt } from 'lucide-react';
 import WhatsAppPhone from '../../../components/ui/WhatsAppPhone';
 // import AddTeacherModal from '../../../components/modals/AddTeacherModal';
 // import ViewTeacherModal from '../../../components/modals/ViewTeacherModal';
@@ -7,16 +7,18 @@ import WhatsAppPhone from '../../../components/ui/WhatsAppPhone';
 import Pagination from '../../../components/ui/Pagination';
 import CustomSelect from '../../../components/ui/CustomSelect';
 import { useTranslation } from 'react-i18next';
-import { useTeacher, useDeleteTeacher, useCreateTeacher, useUpdateTeacher } from '../hooks/useTeacher';
+import { useTeacher, useDeleteTeacher, useCreateTeacher, useUpdateTeacher, useExportTeachers } from '../hooks/useTeacher';
 import { CreateTeacherInput, Teacher } from '../../../types/teachers';
 import { TeacherFormData } from '../../../lib/schemas/TeacherSchema';
 import { useCurrency } from '../hooks/useCurrency';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
+import { message } from 'antd';
 
 const AddTeacherModal = lazy(() => import('../../../components/modals/AddTeacherModal'));
 const ViewTeacherModal = lazy(() => import('../../../components/modals/ViewTeacherModal'));
 const EditTeacherModal = lazy(() => import('../../../components/modals/EditTeacherModal'));
+const TeacherFinancialsModal = lazy(() => import('../../../components/modals/TeacherFinancialsModal'));
 
 
 export default function Teachers() {
@@ -28,8 +30,9 @@ export default function Teachers() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFinancialsModalOpen, setIsFinancialsModalOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-    const [copiedPasswordId, setCopiedPasswordId] = useState<string | null>(null);
+  const [copiedPasswordId, setCopiedPasswordId] = useState<string | null>(null);
 
   const itemsPerPage = 7;
 
@@ -49,7 +52,17 @@ export default function Teachers() {
   const createTeacherMutation = useCreateTeacher();
   const updateTeacherMutation = useUpdateTeacher();
   const { confirm, ConfirmDialog } = useConfirm();
+  const exportTeachersMutation = useExportTeachers();
 
+  const handleExport = async () => {
+    try {
+      await exportTeachersMutation.mutateAsync()
+      message.success(t('teachersExportedSuccessfully'));
+    } catch (error) {
+      console.error("Error in export flow", error)
+      message.error(t('teachersExportError'));
+    }
+  }
   // Bulletproof data extraction
   const teachers = useMemo(() => {
     return teachersResponse?.teachers || [];
@@ -136,7 +149,7 @@ export default function Teachers() {
   }, []);
 
 
-   const handleCopyPassword = (userId: string, password: string) => {
+  const handleCopyPassword = (userId: string, password: string) => {
     navigator.clipboard.writeText(password);
     setCopiedPasswordId(userId);
     setTimeout(() => setCopiedPasswordId(null), 2000);
@@ -150,6 +163,11 @@ export default function Teachers() {
   const handleEditTeacher = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
     setIsEditModalOpen(true);
+  };
+
+  const handleOpenFinancials = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setIsFinancialsModalOpen(true);
   };
 
   const mapFormToApi = (formData: TeacherFormData): CreateTeacherInput => {
@@ -223,16 +241,28 @@ export default function Teachers() {
             {t('teacherManagementSubtitle')}
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 btn-primary text-white px-6 py-3 rounded-xl transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-medium">
-            {t('addNewTeacher')}
-          </span>
-        </button>
-      </div>
+        <div className='flex flex-row gap-3'>
+          <button
+            onClick={handleExport}
+            disabled={exportTeachersMutation.isPending}
+            className="flex items-center gap-2 btn-primary text-white px-6 py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Upload className="w-5 h-5" />
+            <span className="font-medium">
+              {exportTeachersMutation.isPending ? t('exporting') : t('export')}
+            </span>
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 btn-primary text-white px-6 py-3 rounded-xl transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">
+              {t('addNewTeacher')}
+            </span>
+          </button>
+        </div></div>
+
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -296,7 +326,7 @@ export default function Teachers() {
                   <th className="px-6 py-4 text-start text-sm font-semibold text-gray-700">
                     {t('email')}
                   </th>
-                   <th className="px-6 py-4 text-start text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-4 text-start text-sm font-semibold text-gray-700">
                     {t('password')}
                   </th>
                   <th className="px-6 py-4 text-start text-sm font-semibold text-gray-700">
@@ -342,7 +372,7 @@ export default function Teachers() {
                       <td className="px-6 py-4 text-start">
                         <span className="text-sm text-gray-600">{teacher.user?.email || '-'}</span>
                       </td>
-                       <td className="px-6 py-4">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2 group">
                           <span className="text-sm text-gray-600">{teacher.user?.password || '-'}</span>
                           {teacher.user?.password && (
@@ -391,6 +421,7 @@ export default function Teachers() {
                           >
                             <Eye className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                           </button>
+
                           <button
                             onClick={() => handleEditTeacher(teacher)}
                             className="p-2 hover:bg-primary-light rounded-lg transition-colors group"
@@ -399,12 +430,20 @@ export default function Teachers() {
                             <Pencil className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
                           </button>
                           <button
+                            onClick={() => handleOpenFinancials(teacher)}
+                            className="p-2 hover:bg-green-50 rounded-lg transition-colors group"
+                            title={t('teacherFinancials')}
+                          >
+                            <Receipt className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
+                          </button>
+                          <button
                             onClick={() => handleDeleteTeacher(teacher.id)}
                             className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
                             title={t('delete')}
                           >
                             <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-600" />
                           </button>
+
                         </div>
                       </td>
                     </tr>
@@ -451,6 +490,16 @@ export default function Teachers() {
           setSelectedTeacher(null);
         }}
         onSubmit={handleUpdateTeacher}
+        teacher={selectedTeacher}
+      />
+
+      {/* Financials Modal */}
+      <TeacherFinancialsModal
+        isOpen={isFinancialsModalOpen}
+        onClose={() => {
+          setIsFinancialsModalOpen(false);
+          setSelectedTeacher(null);
+        }}
         teacher={selectedTeacher}
       />
       {ConfirmDialog}

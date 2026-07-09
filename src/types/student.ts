@@ -28,6 +28,7 @@ export interface Student {
     sessions: number;
     sessions_attended: number;
     sessions_remaining: number;
+    sessions_filter:"needs_renewal"|"has_remaining"
     planId: string | null;
     country: string;
     status: StudentStatus;

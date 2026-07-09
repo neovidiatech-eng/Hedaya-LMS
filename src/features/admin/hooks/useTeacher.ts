@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createTeacher, deleteTeacher, getTeacher, GetTeachersParams, getTeacherById, searchTeacher, updateTeacher } from "../services/TeacherServices"
-import { CreateTeacherInput , TeachersData, UpdateTeacherInput } from "../../../types/teachers"
+import { createTeacher, deleteTeacher, getTeacher, GetTeachersParams, getTeacherById, searchTeacher, updateTeacher, exportTeacher } from "../services/TeacherServices"
+import { CreateTeacherInput, TeachersData, UpdateTeacherInput } from "../../../types/teachers"
 import { message } from "antd"
+import i18n from "../../../../i18n"
 
 export const useTeacher = (paramsOrSearch?: string | GetTeachersParams) => {
     const isString = typeof paramsOrSearch === 'string';
@@ -54,3 +55,10 @@ export const useCreateTeacher = () => {
     });
 }
 
+export const useExportTeachers = ()=>{
+    return useMutation(
+        {
+            mutationFn:()=>exportTeacher()
+        }
+    )
+}

@@ -25,14 +25,14 @@ export const getStudents = async (params: GetStudentsParams = {}): Promise<Stude
     queryParams.page = 1;
     const firstResponse = await api.get("/students", { params: queryParams });
     const data = firstResponse.data;
-    
+
     if (data.data?.pagination?.totalPages > 1) {
       const totalPages = data.data.pagination.totalPages;
       const promises = [];
       for (let i = 2; i <= totalPages; i++) {
         promises.push(api.get("/students", { params: { ...queryParams, page: i } }));
       }
-      
+
       const results = await Promise.all(promises);
       results.forEach(res => {
         if (res.data?.data?.studentsData) {
@@ -52,8 +52,8 @@ export const getStudents = async (params: GetStudentsParams = {}): Promise<Stude
 export const searchStudent = async (
   search: string,
 ): Promise<StudentsFetchResponse> => {
-    const response = await api.get(`/students?search=${search}`);
-    return response.data;
+  const response = await api.get(`/students?search=${search}`);
+  return response.data;
 
 };
 

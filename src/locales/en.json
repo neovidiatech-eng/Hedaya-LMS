@@ -450,5 +450,16 @@
   "searchPermissions": "Search permissions by name, code, or action...",
   "addedSuccessfully": "Added successfully",
   "updatedSuccessfully": "Updated successfully",
-  "noData": "No data found"
+  "noData": "No data found",
+  "teacherFinancials": "Teacher Financials",
+  "filterByDate": "Filter by Date",
+  "applyFilter": "Apply Filter",
+  "resetFilter": "Reset",
+  "totalWalletBalance": "Total Wallet Balance",
+  "totalCompletedSessions": "Total Completed Sessions",
+  "withdrawalsInPeriod": "Withdrawals in this period",
+  "noWithdrawalsInPeriod": "No withdrawals found for this period",
+  "unknownStatus": "Unknown",
+  "pleaseSelectDateRange": "Please select a date range and click \"Apply Filter\" to view data",
+  "approved": "Approved"
 }
