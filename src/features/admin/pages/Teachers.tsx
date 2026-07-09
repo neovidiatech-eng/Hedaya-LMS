@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, lazy, useCallback } from 'react';
-import { Search, Eye, Pencil, Trash2, Plus, Users, UserCheck, Upload, UserX, Copy, Check, Wallet, Receipt } from 'lucide-react';
+import { Search, Eye, Pencil, Trash2, Plus, Users, UserCheck, Upload, UserX, Copy, Check, Receipt } from 'lucide-react';
 import WhatsAppPhone from '../../../components/ui/WhatsAppPhone';
 // import AddTeacherModal from '../../../components/modals/AddTeacherModal';
 // import ViewTeacherModal from '../../../components/modals/ViewTeacherModal';
