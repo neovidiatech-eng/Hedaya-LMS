@@ -40,6 +40,9 @@ export default function AllSubscriptions() {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "expired" | "cancelled"
   >("all");
+  const [sessionsFilter, setSessionsFilter] = useState<
+    "all" | "needs_renewal" | "has_remaining"
+  >("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [showViewModal, setShowViewModal] = useState(false);
@@ -49,11 +52,13 @@ export default function AllSubscriptions() {
 
   const itemsPerPage = 10;
 
-  const { data, isLoading } = useSubscription();
+  const { data, isLoading } = useSubscription({
+    sessions_filter: sessionsFilter === "all" ? undefined : sessionsFilter
+  });
   const { mutate: renewSubscription } = useRenewSubscription();
 
   const handleRenew = (id: string) => {
-    const originalSub = data?.find((s: SubscriptionData) => s.id === id);
+    const originalSub = data?.subscriptionsData?.find((s: SubscriptionData) => s.id === id);
     if (!originalSub) return;
     setRenewSubData(originalSub);
     setShowPlanModal(true);
@@ -96,7 +101,11 @@ export default function AllSubscriptions() {
       ar: "هل أنت متأكد من حذف هذا الاشتراك؟",
       en: "Are you sure you want to delete this subscription?",
     },
-    renewSubscription: { ar: "تجديد الاشتراك", en: "Renew Subscription" }
+    renewSubscription: { ar: "تجديد الاشتراك", en: "Renew Subscription" },
+    statusLabel: { ar: "فلتر الحالة", en: "Status Filter" },
+    sessionsFilterLabel: { ar: "فلتر الحصص", en: "Session Filter" },
+    needsRenewal: { ar: "بحاجة للتجديد", en: "Needs Renewal" },
+    hasRemaining: { ar: "يوجد حصص متبقية", en: "Has Remaining" }
   };
 
   const mapApiToSubscription = (apiData: SubscriptionData): Subscription => {
@@ -111,15 +120,15 @@ export default function AllSubscriptions() {
       phone: `${apiData.user?.code_country || ""} ${apiData.user?.phone || ""}`.trim(),
       country: apiData.student?.country || "—",
       gender: apiData.student?.gender || "—",
-      planName: language === "ar" ? apiData.plan?.name_ar : apiData.plan?.name_en || "—",
+      planName: (language === "ar" ? apiData.plan?.name_ar : apiData.plan?.name_en) || "—",
       planPrice: `${apiData.amount} ${apiData.currency?.symbol || ""}`,
       currencyName: (language === "ar" ? apiData.currency?.name_ar : apiData.currency?.name_en) || apiData.currency?.code || "—",
-      startDate: startDate.toLocaleDateString(language === "ar" ? "ar-EG" : "en-US"),
+      startDate: isNaN(startDate.getTime()) ? "—" : startDate.toLocaleDateString(language === "ar" ? "ar-EG" : "en-US"),
       rawStartDate: apiData.startDate,
-      paidAt: apiData.paidAt
+      paidAt: apiData.paidAt && !isNaN(new Date(apiData.paidAt).getTime())
         ? new Date(apiData.paidAt).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US")
         : "—",
-      endDate: endDate.toLocaleDateString(language === "ar" ? "ar-EG" : "en-US"),
+      endDate: isNaN(endDate.getTime()) ? "—" : endDate.toLocaleDateString(language === "ar" ? "ar-EG" : "en-US"),
       status: (apiData.status as any) || "active",
       sessionsRemaining: apiData.student?.sessions_remaining ?? 0,
       totalSessions: apiData.student?.sessions ?? apiData.plan?.sessionsCount ?? 0,
@@ -131,8 +140,8 @@ export default function AllSubscriptions() {
   };
 
   const formattedSubscriptions = useMemo(() => {
-    if (!data || !Array.isArray(data)) return [];
-    return data.map(mapApiToSubscription);
+    if (!data?.subscriptionsData || !Array.isArray(data.subscriptionsData)) return [];
+    return data.subscriptionsData.map(mapApiToSubscription);
   }, [data, language]);
 
   const filteredSubscriptions = formattedSubscriptions.filter((subscription) => {
@@ -147,8 +156,7 @@ export default function AllSubscriptions() {
     const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
     const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
     const matchesFromDate = !from || subscriptionStartDate >= from;
-    const matchesToDate = !to || subscriptionStartDate <= to;
-
+    const matchesToDate = !to || subscriptionStartDate <= to;      
     return matchesSearch && matchesStatus && matchesFromDate && matchesToDate;
   });
 
@@ -204,7 +212,8 @@ export default function AllSubscriptions() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
-            <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`} />
+            <label htmlFor="search" className="text-sm font-medium text-gray-700">{text.search[language]}</label>
+            <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} mt-6 transform -translate-y-1/2 text-gray-400 w-5 h-5`} />
             <input
               type="text"
               placeholder={text.search[language]}
@@ -225,6 +234,7 @@ export default function AllSubscriptions() {
                 );
                 setCurrentPage(1);
               }}
+              label={text.statusLabel[language]}
               options={[
                 { value: "all", label: text.all[language] },
                 { value: "active", label: text.active[language] },
@@ -232,6 +242,24 @@ export default function AllSubscriptions() {
                 { value: "cancelled", label: text.cancelled[language] },
               ]}
               placeholder={text.filter[language]}
+            />
+          </div>
+           <div className="w-full md:w-[220px]">
+            <CustomSelect
+              value={sessionsFilter}
+              onChange={(value) => {
+                setSessionsFilter(
+                  value as "all" | "needs_renewal" | "has_remaining",
+                );
+                setCurrentPage(1);
+              }}
+              label={text.sessionsFilterLabel[language]}
+              options={[
+                { value: "all", label: text.all[language] },
+                { value: "needs_renewal", label: text.needsRenewal[language] },
+                { value: "has_remaining", label: text.hasRemaining[language] },
+              ]}
+              placeholder={text.sessionsFilterLabel[language]}
             />
           </div>
         </div>
