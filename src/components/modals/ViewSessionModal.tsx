@@ -159,11 +159,21 @@ export default function ViewSessionModal({
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                    {t("studentLabel")}
+                    {t("studentLabel")} {session.isGroup ? `(${language === 'ar' ? 'جلسة جماعية' : 'Group Session'})` : ''}
                   </p>
-                  <p className="text-sm font-bold text-gray-900">
-                    {session.student?.user?.name || "—"}
-                  </p>
+                  {session.groupStudents && session.groupStudents.length > 0 ? (
+                    <div className="flex flex-col gap-1 mt-1">
+                      {session.groupStudents.map((gs) => (
+                        <span key={gs.id} className="text-xs font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md w-fit">
+                          {gs.student?.user?.name || gs.studentId}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm font-bold text-gray-900">
+                      {session.student?.user?.name || "—"}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -180,16 +190,6 @@ export default function ViewSessionModal({
                   </p>
                 </div>
               </div>
-              {/* 
-              <div className="flex items-start gap-4 group">
-                <div className="p-2.5 rounded-xl bg-fuchsia-50 text-fuchsia-500 group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('subjectLabel')}</p>
-                  <p className="text-sm font-bold text-gray-900">{session.course.title ||""}</p>
-                </div>
-              </div>  */}
 
               <div className="flex items-start gap-4 group">
                 <div className="p-2.5 rounded-xl bg-amber-50 text-amber-500 group-hover:scale-110 transition-transform">
@@ -197,12 +197,10 @@ export default function ViewSessionModal({
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                    {t("type")}
+                    {language === 'ar' ? 'السعة القصوى' : 'Max Capacity'}
                   </p>
                   <p className="text-sm font-bold text-gray-900">
-                    {t(session.type?.toLowerCase() || "") ||
-                      session.type ||
-                      "—"}
+                    {session.maxStudents ? `${session.maxStudents}` : (language === 'ar' ? 'غير محدود' : 'Unlimited')}
                   </p>
                 </div>
               </div>

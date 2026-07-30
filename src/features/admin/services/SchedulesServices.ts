@@ -44,3 +44,14 @@ export const updateSchedule = async (
   const response = await api.patch(`/schedules/${scheduleId}`, scheduleData);
   return response.data;
 };
+
+export const joinSchedule = async (scheduleId: string) => {
+  const response = await api.post(`/schedules/${scheduleId}/join`);
+  return response.data;
+};
+
+export const leaveSchedule = async (scheduleId: string) => {
+  const response = await api.post(`/schedules/${scheduleId}/leave`);
+  return response.data;
+};
+
