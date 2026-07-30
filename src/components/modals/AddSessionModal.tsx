@@ -92,7 +92,7 @@ export default function AddSessionModal({
     defaultValues: {
       type: 'full',
       notification_Time: '10',
-      student: '',
+      student: [],
       teacher: '',
       subject: '',
       title: '',
@@ -409,6 +409,7 @@ export default function AddSessionModal({
                   control={control}
                   render={({ field }) => (
                     <CustomSelect
+                      mode="multiple"
                       options={
                         students?.data?.studentsData?.map(
                           (student: Student) => ({
@@ -471,25 +472,40 @@ export default function AddSessionModal({
             {/* Plan Card */}
             <StudentPlanCard studentPlanInfo={studentPlanInfo} />
 
-            {/* Title */}
-            <div className="mb-6">
-              <label className="label">
-                <Video className="w-3.5 h-3.5" />
-                {t('sessionTitleLabel') || 'Session Title'}
-              </label>
+            {/* Title & Max Students */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+              <div className="sm:col-span-2">
+                <label className="label">
+                  <Video className="w-3.5 h-3.5" />
+                  {t('sessionTitleLabel') || 'Session Title'}
+                </label>
 
-              <input
-                type="text"
-                {...register('title')}
-                placeholder={t('sessionTitlePlaceholder') || 'Session Title'}
-                className="input"
-              />
+                <input
+                  type="text"
+                  {...register('title')}
+                  placeholder={t('sessionTitlePlaceholder') || 'Session Title'}
+                  className="input"
+                />
 
-              {errors.title && (
-                <p className="error-text">
-                  {errors.title.message as string}
-                </p>
-              )}
+                {errors.title && (
+                  <p className="error-text">
+                    {errors.title.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="label">
+                  {language === 'ar' ? 'السعة القصوى' : 'Max Students'}
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  {...register('maxStudents')}
+                  placeholder="5"
+                  className="input"
+                />
+              </div>
             </div>
 
             {/* Description */}
@@ -610,6 +626,7 @@ export default function AddSessionModal({
                   render={({ field }) => (
                     <CustomSelect
                       options={[
+                        { value: '5', label: language === 'ar' ? 'قبل 5 دقائق' : '5 minutes before' },
                         { value: '10', label: language === 'ar' ? 'قبل 10 دقائق' : '10 minutes before' },
                         { value: '30', label: language === 'ar' ? 'قبل 30 دقيقة' : '30 minutes before' },
                         { value: '60', label: language === 'ar' ? 'قبل ساعة' : '1 hour before' },

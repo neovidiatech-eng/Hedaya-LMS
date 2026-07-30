@@ -29,6 +29,7 @@ export default function EditSessionModal({ isOpen, onClose, session, groupedSess
     end_time: '',
     type: 'full' as 'full' | 'half',
     notification_Time: '10',
+    maxStudents: '',
   });
 
   const toLocalDatetimeString = (date: Date) => {
@@ -53,6 +54,7 @@ export default function EditSessionModal({ isOpen, onClose, session, groupedSess
       end_time: endDate ? toLocalDatetimeString(endDate) : '',
       type: (s.type as 'full' | 'half') || 'full',
       notification_Time: String((s as any).notification_Time || (s as any).notification_time || (s as any).notificationTime || '10'),
+      maxStudents: (s.maxStudents !== undefined && s.maxStudents !== null) ? String(s.maxStudents) : '',
     });
   };
 
@@ -80,6 +82,10 @@ export default function EditSessionModal({ isOpen, onClose, session, groupedSess
       start_time: formData.start_time ? new Date(formData.start_time).toISOString() : currentSession.start_time,
       notification_Time: formData.notification_Time,
     };
+
+    if (formData.maxStudents !== undefined && formData.maxStudents !== '') {
+      payload.maxStudents = formData.maxStudents;
+    }
 
     if (formData.description && formData.description.trim() !== '') {
       payload.description = formData.description;
@@ -232,6 +238,7 @@ export default function EditSessionModal({ isOpen, onClose, session, groupedSess
                   value={formData.notification_Time}
                   onChange={(val) => handleChange('notification_Time', val as string)}
                   options={[
+                    { value: '5', label: language === 'ar' ? 'قبل 5 دقائق' : '5 minutes before' },
                     { value: '10', label: language === 'ar' ? 'قبل 10 دقائق' : '10 minutes before' },
                     { value: '30', label: language === 'ar' ? 'قبل 30 دقيقة' : '30 minutes before' },
                     { value: '60', label: language === 'ar' ? 'قبل ساعة' : '1 hour before' },
