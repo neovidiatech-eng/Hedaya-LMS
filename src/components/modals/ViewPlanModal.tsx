@@ -1,29 +1,11 @@
 import { X, CheckCircle, Package, CreditCard, Users } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { Plan } from '../../types/plan';
 
 interface ViewPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  plan: {
-    id: string;
-    name_ar: string;
-    name_en: string;
-    description: string;
-    price: number | string;
-    currency?: { code: string };
-
-    duration: number;
-    sessionsCount: number;
-    sessionTime: number;
-    features: string[];
-    bestSeller: boolean;
-    active: boolean;
-    isHidden: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
-
-
+  plan: Plan;
 }
 
 export default function ViewPlanModal({ isOpen, onClose, plan }: ViewPlanModalProps) {
@@ -51,6 +33,10 @@ export default function ViewPlanModal({ isOpen, onClose, plan }: ViewPlanModalPr
     visible: { ar: 'مرئي', en: 'Visible' },
     isPopular: { ar: 'الأكثر شعبية', en: 'Most Popular' },
     sessionTime: { ar: 'مدة الحصة (دقيقة)', en: 'Session Time (Minutes)' },
+    planType: { ar: 'نوع الخطة', en: 'Plan Type' },
+    studentsNum: { ar: 'عدد الطلاب', en: 'Number of Students' },
+    singlePlan: { ar: 'خطة فردية', en: 'Single Plan' },
+    groupPlan: { ar: 'خطة جماعية', en: 'Group Plan' },
     yes: { ar: 'نعم', en: 'Yes' },
 
     no: { ar: 'لا', en: 'No' },
@@ -105,6 +91,12 @@ export default function ViewPlanModal({ isOpen, onClose, plan }: ViewPlanModalPr
               <div className="md:col-span-2">
                 <p className="text-sm text-gray-600 mb-1">{text.description[language]}</p>
                 <p className="text-base font-semibold text-gray-900">{plan.description}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">{text.planType[language]}</p>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${plan.planType === 'group' ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
+                  {plan.planType === 'group' ? `${text.groupPlan[language]} (${plan.studentsNum || 2} ${text.studentsNum[language]})` : text.singlePlan[language]}
+                </span>
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">{text.status[language]}</p>

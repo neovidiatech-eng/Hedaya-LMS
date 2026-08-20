@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Edit, Trash2, Eye, Package, CheckCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Package, CheckCircle, Users, User } from "lucide-react";
 import { useLanguage } from "../../../contexts/LanguageContext";
 import AddPlanModal from "../../../components/modals/AddPlanModal";
 import ViewPlanModal from "../../../components/modals/ViewPlanModal";
@@ -56,7 +56,8 @@ export default function Plans() {
           duration: item.duration,
           sessionsCount: item.sessionsCount ?? item.hours ?? 0,
           sessionTime: item.sessionTime || 0,
-
+          planType: item.planType,
+          studentsNum: item.studentsNum,
           features: item.features || [],
           bestSeller: item.bestSeller,
           active: item.active,
@@ -104,7 +105,12 @@ export default function Plans() {
         bestSeller: planData.isPopular,
         currencyId: planData.currencyId,
         isHidden: planData.isHidden ?? false,
+        planType: planData.planType,
       };
+
+      if (planData.planType === 'group' && planData.studentsNum) {
+        payload.studentsNum = Number(planData.studentsNum);
+      }
 
       if (planData.description && planData.description.trim() !== '') {
         payload.description = planData.description;
@@ -133,7 +139,8 @@ export default function Plans() {
         duration: item.duration,
         sessionsCount: item.sessionsCount ?? item.hours ?? 0,
         sessionTime: item.sessionTime || 0,
-
+        planType: item.planType || 'single',
+        studentsNum: item.studentsNum,
         features: item.features || [],
         bestSeller: item.bestSeller,
         active: item.active,
@@ -207,9 +214,22 @@ export default function Plans() {
               <div className="p-6 flex flex-col flex-1 justify-center">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 text-start">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      {language === "ar" ? plan.name_ar : plan.name_en}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {language === "ar" ? plan.name_ar : plan.name_en}
+                      </h3>
+                      {plan.planType === 'group' ? (
+                        <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold border border-purple-200">
+                          <Users className="w-3.5 h-3.5" />
+                          {language === 'ar' ? `جماعية (${plan.studentsNum || 2} طلاب)` : `Group (${plan.studentsNum || 2} students)`}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium border border-blue-100">
+                          <User className="w-3.5 h-3.5 text-blue-500" />
+                          {language === 'ar' ? 'فردية' : 'Single'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-gray-600 text-sm" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>{plan.description}</p>
                   </div>
                   <span
@@ -308,6 +328,8 @@ export default function Plans() {
           isPopular: selectedPlan.bestSeller,
           isHidden: selectedPlan.isHidden,
           status: selectedPlan.active ? 'active' : 'inactive',
+          planType: selectedPlan.planType === 'group' ? 'group' : 'single',
+          studentsNum: selectedPlan.studentsNum ? Number(selectedPlan.studentsNum) : undefined,
           id: selectedPlan.id
         } : null}
       />

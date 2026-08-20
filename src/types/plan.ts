@@ -21,6 +21,8 @@ export type Plan = {
   bestSeller: boolean;
   isHidden: boolean;
   currency?: Currency;
+  planType?: "single" | "group" | string;
+  maxStudents: number | string;
   createdAt: string;
   updatedAt: string;
 };
@@ -51,6 +53,8 @@ export interface PlanBody {
   features: string[];
   currencyId: string;
   sessionTime: number;
+  planType?: "single" | "group";
+  studentsNum?: number;
 }
 
 

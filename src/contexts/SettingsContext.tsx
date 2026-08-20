@@ -41,7 +41,7 @@ const defaultSettings: PlatformSettings = {
   nameEn: 'Hedaya Academy',
   description: 'أكاديمية هداية - منصة تعليمية متكاملة لإدارة الكورسات والطلاب والمعلمين',
   logoUrl: '/logo.jpeg',
-  faviconUrl: '/logo.jpeg',
+  faviconUrl: '/logo1.png',
   primaryColor: '#369589',
   secondaryColor: '#0f172a',
   accentColor: '#06b6d4',
@@ -81,14 +81,29 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
-const STORAGE_KEY = 'platform_settings';
+const STORAGE_KEY = 'hedaya_platform_settings';
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<PlatformSettings>(() => {
     try {
+      // Remove stale Waai settings from legacy key if present
+      const oldSaved = localStorage.getItem('platform_settings');
+      if (oldSaved && (oldSaved.includes('وعي') || oldSaved.includes('Waai'))) {
+        localStorage.removeItem('platform_settings');
+      }
+
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (
+          parsed.nameAr?.includes('وعي') ||
+          parsed.nameEn?.includes('Waai') ||
+          parsed.seo?.metaTitle?.includes('وعي') ||
+          parsed.seo?.metaTitle?.includes('Waai')
+        ) {
+          localStorage.removeItem(STORAGE_KEY);
+          return defaultSettings;
+        }
         // Migrate/update stale stored values to the new defaults
         if (!parsed.logoUrl || parsed.logoUrl === '') {
           parsed.logoUrl = defaultSettings.logoUrl;
@@ -102,12 +117,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         if (!parsed.nameEn && parsed.name) {
           parsed.nameEn = parsed.name;
         }
-        // Remove legacy name field after migration (optional)
         delete parsed.name;
-        // Ensure nameAr/nameEn have defaults
-        if (!parsed.nameAr) parsed.nameAr = defaultSettings.nameAr;
-        if (!parsed.nameEn) parsed.nameEn = defaultSettings.nameEn;
-        if (!parsed.seo || !parsed.seo.metaTitle || parsed.seo.metaTitle === 'Hedaya') {
+        if (!parsed.nameAr || parsed.nameAr.includes('وعي')) parsed.nameAr = defaultSettings.nameAr;
+        if (!parsed.nameEn || parsed.nameEn.includes('Waai')) parsed.nameEn = defaultSettings.nameEn;
+        if (
+          !parsed.seo ||
+          !parsed.seo.metaTitle ||
+          parsed.seo.metaTitle.includes('Waai') ||
+          parsed.seo.metaTitle.includes('وعي')
+        ) {
           parsed.seo = { ...defaultSettings.seo, ...parsed.seo };
           parsed.seo.metaTitle = defaultSettings.seo.metaTitle;
           parsed.seo.metaDescription = defaultSettings.seo.metaDescription;

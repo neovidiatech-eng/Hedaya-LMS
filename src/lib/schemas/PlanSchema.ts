@@ -15,6 +15,8 @@ export const getPlanSchema = (t: TFunc) => z.object({
   isPopular: z.boolean(),
   isHidden: z.boolean().optional().default(false),
   status: z.enum(['active', 'inactive']),
+  planType: z.enum(['single', 'group']).default('single'),
+  maxStudents: z.coerce.string().default("0"),
 });
 
 export type PlanFormData = z.infer<ReturnType<typeof getPlanSchema>>;

@@ -34,9 +34,12 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
       isPopular: false,
       isHidden: false,
       status: 'active',
+      planType: 'single',
+      maxStudents: "0",
     },
 
   });
+  const selectedPlanType = watch('planType');
   const features = watch('features') || [];
   const addFeature = () => {
     setValue('features', [...features, '']);
@@ -89,6 +92,8 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
           isPopular: false,
           isHidden: false,
           status: 'active',
+          planType: 'single',
+          maxStudents: "0",
         });
 
       }
@@ -115,12 +120,20 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
     inactive: { ar: 'غير نشط', en: 'Inactive' },
     save: { ar: 'حفظ التغييرات', en: 'Save Changes' },
     cancel: { ar: 'إلغاء', en: 'Cancel' },
-    featurePlaceholder: { ar: 'اكتب الميزة...', en: 'Enter feature...' }
+    featurePlaceholder: { ar: 'اكتب الميزة...', en: 'Enter feature...' },
+    planType: { ar: 'نوع الخطة', en: 'Plan Type' },
+    singlePlan: { ar: 'خطة فردية', en: 'Single Plan' },
+    groupPlan: { ar: 'خطة جماعية', en: 'Group Plan' },
+    studentsNum: { ar: 'عدد الطلاب في الخطة', en: 'Number of Students' },
+    unlimitedStudentsHint: {
+      ar: '* كتابة 0 تعني عدد لا نهائي من الطلاب',
+      en: '* Entering 0 means an unlimited number of students',
+    },
   };
 
   const onSubmit = async (data: PlanFormData) => {
     const filteredFeatures = data.features?.filter(f => typeof f === 'string' && f.trim() !== '') || [];
-    
+
     const payload: any = {
       ...data,
       id: initialData?.id,
@@ -176,6 +189,51 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Plan Type + Students Num */}
+          <div className={selectedPlanType === 'group' ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "w-full"}>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 text-start">
+                {text.planType[language]}
+              </label>
+              <Controller
+                name="planType"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    options={[
+                      { label: text.singlePlan[language], value: 'single' },
+                      { label: text.groupPlan[language], value: 'group' },
+                    ]}
+                    className='text-start'
+                    {...field}
+                  />
+                )}
+              />
+            </div>
+
+            {selectedPlanType === 'group' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 text-start">
+                  {text.studentsNum[language]}
+                </label>
+                <input
+                  type="text"
+                  min={0}
+                  {...register('maxStudents')}
+                  className="w-full px-4 py-2.5 border rounded-lg text-start"
+                />
+                <p className="text-primary text-xs mt-1.5 text-start font-medium">
+                  {text.unlimitedStudentsHint[language]}
+                </p>
+                {errors.maxStudents && (
+                  <p className="text-red-500 text-sm mt-1 text-start">
+                    {errors.maxStudents.message}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Description (Optional) */}
@@ -295,6 +353,8 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
             </div>
 
           </div>
+
+
 
           {/* Features (Optional) */}
           <div>

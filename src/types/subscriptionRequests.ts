@@ -56,6 +56,8 @@ export interface Plan {
   bestSeller: boolean;
   sessionsCount: number;
   sessionTime: number;
+  planType?: "single" | "group" | string;
+  studentsNum?: number | string;
 }
 
 export interface Pagination {

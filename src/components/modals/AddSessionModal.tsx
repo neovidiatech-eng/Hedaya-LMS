@@ -101,19 +101,26 @@ export default function AddSessionModal({
       platform: 'zoom',
       meetingLink: '',
       sessionDate: (() => {
-        const tom = new Date();
-        tom.setDate(tom.getDate() + 1);
-        return tom.toISOString().split('T')[0];
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       })(),
       batchStartDate: (() => {
-        const tom = new Date();
-        tom.setDate(tom.getDate() + 1);
-        return tom.toISOString().split('T')[0];
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       })(),
       batchEndDate: (() => {
         const nextMonth = new Date();
         nextMonth.setDate(nextMonth.getDate() + 29);
-        return nextMonth.toISOString().split('T')[0];
+        const y = nextMonth.getFullYear();
+        const m = String(nextMonth.getMonth() + 1).padStart(2, '0');
+        const d = String(nextMonth.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       })(),
       startTime: '14:00',
       endTime: '15:00',
@@ -242,14 +249,16 @@ export default function AddSessionModal({
 
     if (!startDateStr || !endDateStr || !watchSelectedDays.length) return sessions;
 
-    const startDate = new Date(startDateStr);
-    const endDate = new Date(endDateStr);
+    const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
 
-    const tomorrow = new Date();
-    tomorrow.setHours(0, 0, 0, 0);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const endDate = new Date(endYear, endMonth - 1, endDay);
 
-    const currentDate = startDate < tomorrow ? new Date(tomorrow) : new Date(startDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const currentDate = startDate < today ? new Date(today) : new Date(startDate);
 
     while (currentDate <= endDate) {
       const currentDay = currentDate.toLocaleDateString('en-US', {

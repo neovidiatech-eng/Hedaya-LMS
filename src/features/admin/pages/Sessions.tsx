@@ -83,16 +83,18 @@ export default function Sessions() {
         // Batch / Recurring Scheduling
         const { formData, sessions, selectedDays } = data as MultipleSessionsPayload;
 
-        const tomorrowStr = (() => {
-          const tom = new Date();
-          tom.setDate(tom.getDate() + 1);
-          return tom.toISOString().split("T")[0];
+        const todayStr = (() => {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          return `${y}-${m}-${d}`;
         })();
 
-        const rawStartDate = formData.batchStartDate || (formData.monthYear ? `${formData.monthYear}-01` : tomorrowStr);
-        const rawEndDate = formData.batchEndDate || (formData.monthYear ? `${formData.monthYear}-28` : tomorrowStr);
+        const rawStartDate = formData.batchStartDate || (formData.monthYear ? `${formData.monthYear}-01` : todayStr);
+        const rawEndDate = formData.batchEndDate || (formData.monthYear ? `${formData.monthYear}-28` : todayStr);
 
-        const startDate = rawStartDate < tomorrowStr ? tomorrowStr : rawStartDate;
+        const startDate = rawStartDate < todayStr ? todayStr : rawStartDate;
         const endDate = rawEndDate;
 
         await createRecurringSchedule.mutateAsync({
