@@ -58,6 +58,7 @@ export default function Plans() {
           sessionTime: item.sessionTime || 0,
           planType: item.planType,
           studentsNum: item.studentsNum,
+          maxStudents: item.maxStudents ?? item.studentsNum ?? 0,
           features: item.features || [],
           bestSeller: item.bestSeller,
           active: item.active,
@@ -108,8 +109,8 @@ export default function Plans() {
         planType: planData.planType,
       };
 
-      if (planData.planType === 'group' && planData.studentsNum) {
-        payload.studentsNum = Number(planData.studentsNum);
+      if (planData.planType === 'group' && planData.maxStudents) {
+        payload.studentsNum = Number(planData.maxStudents);
       }
 
       if (planData.description && planData.description.trim() !== '') {
@@ -141,6 +142,7 @@ export default function Plans() {
         sessionTime: item.sessionTime || 0,
         planType: item.planType || 'single',
         studentsNum: item.studentsNum,
+        maxStudents: item.maxStudents ?? item.studentsNum ?? 0,
         features: item.features || [],
         bestSeller: item.bestSeller,
         active: item.active,
@@ -329,7 +331,7 @@ export default function Plans() {
           isHidden: selectedPlan.isHidden,
           status: selectedPlan.active ? 'active' : 'inactive',
           planType: selectedPlan.planType === 'group' ? 'group' : 'single',
-          studentsNum: selectedPlan.studentsNum ? Number(selectedPlan.studentsNum) : undefined,
+          maxStudents: selectedPlan.maxStudents ? String(selectedPlan.maxStudents) : (selectedPlan.studentsNum ? String(selectedPlan.studentsNum) : "0"),
           id: selectedPlan.id
         } : null}
       />

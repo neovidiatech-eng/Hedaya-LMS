@@ -22,7 +22,8 @@ export type Plan = {
   isHidden: boolean;
   currency?: Currency;
   planType?: "single" | "group" | string;
-  maxStudents: number | string;
+  maxStudents?: number | string;
+  studentsNum?: number;
   createdAt: string;
   updatedAt: string;
 };
