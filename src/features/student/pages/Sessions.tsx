@@ -6,11 +6,10 @@ import ViewSessionModal from '../../../components/modals/ViewSessionModal';
 import { Schedule } from '../../../types/scheduales';
 import { useSubjects } from '../../../features/admin/hooks/useSubjects';
 import { Subject } from '../../../types/subject';
-import { useJoinToSession, useUserSessions } from '../../../hooks/useSessions';
+import { useJoinToSession, useLeaveSession, useUserSessions } from '../../../hooks/useSessions';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
 import { useSettings } from '../../../contexts/SettingsContext';
 import CreateRequestModal from '../../../components/modals/CreateRequestModal';
-import { leaveSession } from '../../../services/SessionsServices';
 import FeedbackModal from '../../teacher/components/FeedbackModal';
 
 export default function Sessions() {
@@ -48,7 +47,8 @@ export default function Sessions() {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const fifteenMinsAfterStart = new Date(start.getTime() + 15 * 60000);
-    return now >= fifteenMinsAfterStart && now <= end;
+    const fiveMinsAfterEnd = new Date(end.getTime() + 5 * 60000);
+    return now >= fifteenMinsAfterStart && now <= fiveMinsAfterEnd;
   };
 
   const isRequestable = (startTime: string) => {
@@ -66,6 +66,8 @@ export default function Sessions() {
 
   const { data: allSchedules, isLoading } = useUserSessions(debouncedSearch);
   const { mutateAsync: joinToSession, isPending: isJoining } = useJoinToSession();
+  const { mutateAsync: leaveSession } = useLeaveSession();
+  const [endedSessionIds, setEndedSessionIds] = useState<string[]>([]);
 
   const itemsPerPage = 5;
 
@@ -261,26 +263,27 @@ export default function Sessions() {
                       </td>
 
                         <td className="px-6 py-4 text-start">
-                                                   <button
-                          onClick={async () => {
-                            try {
-                              await leaveSession(session.id);
-                              setSessionForFeedback(session);
-                              setShowFeedbackModal(true);
-                            } catch (error) {
-                              console.log(error);
-                            }
-                          }}
-                          disabled={session.status?.toLowerCase() === 'completed' || !isEndable(session.start_time, session.end_time)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(session.status?.toLowerCase() === 'completed' || !isEndable(session.start_time, session.end_time))
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
-                          }`}
-                        >
-                          <X className="w-4 h-4" />
-                          <span className="text-sm">{t('endSession') || 'End Session'}</span>
-                        </button>
-                                            </td>
+                          <button
+                            onClick={async () => {
+                              try {
+                                setEndedSessionIds((prev) => [...prev, session.id]);
+                                await leaveSession(session.id);
+                                setSessionForFeedback(session);
+                                setShowFeedbackModal(true);
+                              } catch (error) {
+                                console.log(error);
+                              }
+                            }}
+                            disabled={session.status?.toLowerCase() === 'completed' || endedSessionIds.includes(session.id) || !isEndable(session.start_time, session.end_time)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(session.status?.toLowerCase() === 'completed' || endedSessionIds.includes(session.id) || !isEndable(session.start_time, session.end_time))
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
+                            }`}
+                          >
+                            <X className="w-4 h-4" />
+                            <span className="text-sm">{t('endSession') || 'End Session'}</span>
+                          </button>
+                        </td>
 
                       <td className="px-3 py-3 text-start">
                         <button
