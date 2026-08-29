@@ -54,8 +54,7 @@ export interface PlanBody {
   features: string[];
   currencyId: string;
   sessionTime: number;
-  planType?: "single" | "group";
-  studentsNum?: number;
+  planType?: "individual" | "group";
+  maxStudents?: number;
 }
-
 

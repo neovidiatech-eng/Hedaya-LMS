@@ -15,8 +15,16 @@ export const getPlanSchema = (t: TFunc) => z.object({
   isPopular: z.boolean(),
   isHidden: z.boolean().optional().default(false),
   status: z.enum(['active', 'inactive']),
-  planType: z.enum(['single', 'group']).default('single'),
-  maxStudents: z.coerce.string().default("0"),
+  planType: z.enum(['individual', 'group']).default('individual'),
+  maxStudents: z.coerce.number().optional().default(0),
+}).refine((data) => {
+  if (data.planType === 'group') {
+    return data.maxStudents !== undefined && Number(data.maxStudents) >= 0;
+  }
+  return true;
+}, {
+  message: t("validation.min", { count: 0 }) || "Must be greater than or equal to 0",
+  path: ["maxStudents"]
 });
 
 export type PlanFormData = z.infer<ReturnType<typeof getPlanSchema>>;

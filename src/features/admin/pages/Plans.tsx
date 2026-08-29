@@ -57,8 +57,7 @@ export default function Plans() {
           sessionsCount: item.sessionsCount ?? item.hours ?? 0,
           sessionTime: item.sessionTime || 0,
           planType: item.planType,
-          studentsNum: item.studentsNum,
-          maxStudents: item.maxStudents ?? item.studentsNum ?? 0,
+          maxStudents: item.maxStudents ?? 0,
           features: item.features || [],
           bestSeller: item.bestSeller,
           active: item.active,
@@ -109,8 +108,8 @@ export default function Plans() {
         planType: planData.planType,
       };
 
-      if (planData.planType === 'group' && planData.maxStudents) {
-        payload.studentsNum = Number(planData.maxStudents);
+      if (planData.planType === 'group' && Number(planData.maxStudents) > 0) {
+        payload.maxStudents = Number(planData.maxStudents);
       }
 
       if (planData.description && planData.description.trim() !== '') {
@@ -141,8 +140,7 @@ export default function Plans() {
         sessionsCount: item.sessionsCount ?? item.hours ?? 0,
         sessionTime: item.sessionTime || 0,
         planType: item.planType || 'single',
-        studentsNum: item.studentsNum,
-        maxStudents: item.maxStudents ?? item.studentsNum ?? 0,
+        maxStudents: item.maxStudents ?? 0,
         features: item.features || [],
         bestSeller: item.bestSeller,
         active: item.active,
@@ -223,7 +221,7 @@ export default function Plans() {
                       {plan.planType === 'group' ? (
                         <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold border border-purple-200">
                           <Users className="w-3.5 h-3.5" />
-                          {language === 'ar' ? `جماعية (${plan.studentsNum || 2} طلاب)` : `Group (${plan.studentsNum || 2} students)`}
+                          {language === 'ar' ? `جماعية (${plan.maxStudents || 0} طلاب)` : `Group (${plan.maxStudents || 0} students)`}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium border border-blue-100">
@@ -330,8 +328,8 @@ export default function Plans() {
           isPopular: selectedPlan.bestSeller,
           isHidden: selectedPlan.isHidden,
           status: selectedPlan.active ? 'active' : 'inactive',
-          planType: selectedPlan.planType === 'group' ? 'group' : 'single',
-          maxStudents: selectedPlan.maxStudents ? String(selectedPlan.maxStudents) : (selectedPlan.studentsNum ? String(selectedPlan.studentsNum) : "0"),
+          planType: selectedPlan.planType === 'group' ? 'group' : 'individual',
+          maxStudents: selectedPlan.maxStudents ? Number(selectedPlan.maxStudents) : 0,
           id: selectedPlan.id
         } : null}
       />

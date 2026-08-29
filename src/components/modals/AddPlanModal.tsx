@@ -34,8 +34,8 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
       isPopular: false,
       isHidden: false,
       status: 'active',
-      planType: 'single',
-      maxStudents: "0",
+      planType: 'individual',
+      maxStudents: 0,
     },
 
   });
@@ -92,8 +92,8 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
           isPopular: false,
           isHidden: false,
           status: 'active',
-          planType: 'single',
-          maxStudents: "0",
+          planType: 'individual',
+          maxStudents: 0,
         });
 
       }
@@ -157,7 +157,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
   return (
     <div className="fixed inset-0  !mt-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh]  overflow-y-auto no-scrollbar" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-        <div className="sticky top-0 bg-primary border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+        <div className="sticky top-0 bg-primary border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-20">
           <h2 className="text-2xl font-bold text-white">{text.title[language]}</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-6 h-6 text-white" />
@@ -203,7 +203,7 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
                 render={({ field }) => (
                   <CustomSelect
                     options={[
-                      { label: text.singlePlan[language], value: 'single' },
+                      { label: text.singlePlan[language], value: 'individual' },
                       { label: text.groupPlan[language], value: 'group' },
                     ]}
                     className='text-start'
@@ -211,6 +211,11 @@ export default function AddPlanModal({ isOpen, onClose, onSave, initialData }: A
                   />
                 )}
               />
+              {errors.planType && (
+                <p className="text-red-500 text-sm mt-1 text-start">
+                  {errors.planType.message}
+                </p>
+              )}
             </div>
 
             {selectedPlanType === 'group' && (

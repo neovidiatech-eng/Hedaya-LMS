@@ -4,8 +4,6 @@ import Pagination from '../../../components/ui/Pagination';
 import { useTranslation } from 'react-i18next';
 import ViewSessionModal from '../../../components/modals/ViewSessionModal';
 import { Schedule } from '../../../types/scheduales';
-import { useSubjects } from '../../../features/admin/hooks/useSubjects';
-import { Subject } from '../../../types/subject';
 import {  useUserSessions } from '../../../hooks/useSessions';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
 import { useSettings } from '../../../contexts/SettingsContext';
@@ -130,15 +128,11 @@ export default function Sessions() {
     }
   };
 
-  const { data: subjects } = useSubjects();
-  const dynamicsubjects = subjects?.subjects || [];
-
   const getSubjectName = (session: Schedule) => {
     if (session.subject) {
       return language === 'ar' ? session.subject.name_ar : session.subject.name_en;
     }
-    const subject = dynamicsubjects.find((s: Subject) => s.id === session.subjectId);
-    return subject ? (language === 'ar' ? subject.name_ar : subject.name_en) : 'subject';
+    return session.subjectId || 'subject';
   };
 
   return (

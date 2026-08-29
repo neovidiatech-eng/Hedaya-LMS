@@ -4,8 +4,6 @@ import Pagination from '../../../components/ui/Pagination';
 import { useTranslation } from 'react-i18next';
 import ViewSessionModal from '../../../components/modals/ViewSessionModal';
 import { Schedule } from '../../../types/scheduales';
-import { useSubjects } from '../../../features/admin/hooks/useSubjects';
-import { Subject } from '../../../types/subject';
 import { useJoinToSession, useLeaveSession, useUserSessions } from '../../../hooks/useSessions';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
 import { useSettings } from '../../../contexts/SettingsContext';
@@ -47,8 +45,8 @@ export default function Sessions() {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const fifteenMinsAfterStart = new Date(start.getTime() + 15 * 60000);
-    const fiveMinsAfterEnd = new Date(end.getTime() + 5 * 60000);
-    return now >= fifteenMinsAfterStart && now <= fiveMinsAfterEnd;
+    const twentyMinsAfterEnd = new Date(end.getTime() + 20 * 60000);
+    return now >= fifteenMinsAfterStart && now <= twentyMinsAfterEnd;
   };
 
   const isRequestable = (startTime: string) => {
@@ -68,10 +66,38 @@ export default function Sessions() {
   const { mutateAsync: joinToSession, isPending: isJoining } = useJoinToSession();
   const { mutateAsync: leaveSession } = useLeaveSession();
   const [endedSessionIds, setEndedSessionIds] = useState<string[]>([]);
+  const [autoHandledSessionIds, setAutoHandledSessionIds] = useState<string[]>([]);
 
   const itemsPerPage = 5;
 
   const scheduleData = allSchedules?.data || [];
+
+  // Automatically trigger leave & feedback modal for sessions that auto-closed after 20 minutes
+  useEffect(() => {
+    if (!scheduleData || scheduleData.length === 0 || showFeedbackModal) return;
+
+    const expiredSession = scheduleData.find((session: Schedule) => {
+      if (!session.start_time || !session.end_time) return false;
+      const status = session.status?.toLowerCase();
+      if (status === 'completed' || status === 'cancelled') return false;
+      if (endedSessionIds.includes(session.id) || autoHandledSessionIds.includes(session.id)) return false;
+
+      const start = new Date(session.start_time);
+      const end = new Date(session.end_time);
+      const twentyMinsAfterEnd = new Date(end.getTime() + 20 * 60000);
+
+      const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60000);
+      return now >= twentyMinsAfterEnd && start >= fortyEightHoursAgo;
+    });
+
+    if (expiredSession) {
+      setAutoHandledSessionIds((prev) => [...prev, expiredSession.id]);
+      setEndedSessionIds((prev) => [...prev, expiredSession.id]);
+      leaveSession(expiredSession.id).catch((err) => console.log('Auto leave session error:', err));
+      setSessionForFeedback(expiredSession);
+      setShowFeedbackModal(true);
+    }
+  }, [now, scheduleData, endedSessionIds, autoHandledSessionIds, showFeedbackModal, leaveSession]);
   const displaySchedules: Schedule[] = [];
   const seenParents = new Set<string>();
 
@@ -157,15 +183,11 @@ export default function Sessions() {
     }
   };
 
-  const { data: subjects } = useSubjects();
-  const dynamicsubjects = subjects?.subjects || [];
-
   const getSubjectName = (session: Schedule) => {
     if (session.subject) {
       return language === 'ar' ? session.subject.name_ar : session.subject.name_en;
     }
-    const subject = dynamicsubjects.find((s: Subject) => s.id === session.subjectId);
-    return subject ? (language === 'ar' ? subject.name_ar : subject.name_en) : 'subject';
+    return session.subjectId || 'subject';
   };
 
   return (
