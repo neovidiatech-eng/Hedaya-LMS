@@ -47,13 +47,30 @@ export default function ViewTeacherModal({ isOpen, onClose, teacher }: ViewTeach
   const completedHours = completedSessions.reduce((sum, s) => sum + calcSessionHours(s), 0);
   const pendingHours = upcomingSessions.reduce((sum, s) => sum + calcSessionHours(s), 0);
 
-  const hourPrice = activeTeacher.hour_price || 0;
+  const stats = (activeTeacher as any).stats;
+  const financials = stats?.financials;
+
+  const totalStudentsCount = stats?.totalStudents ?? uniqueStudents.length;
+  const todaySessionsCount = stats?.todaySessions ?? todaySessions.length;
+  const completedSessionsCount = stats?.completedSessions ?? completedSessions.length;
+  const upcomingSessionsCount = stats?.upcomingSessions ?? upcomingSessions.length;
+
+  const hourPrice = financials?.hourPrice ?? activeTeacher.hour_price ?? 0;
   const totalEarnings = completedHours * hourPrice;
   const pendingEarnings = pendingHours * hourPrice;
   const totalOwed = totalHours * hourPrice;
 
+  const displayTotalHours = financials?.totalHours ?? totalHours;
+  const displayTotalDue = financials?.totalDue ?? totalOwed;
+  const displayCompletedEarnings = financials?.completedEarnings ?? totalEarnings;
+  const displayCompletedHours = financials?.completedHours ?? completedHours;
+  const displayPendingEarnings = financials?.pendingEarnings ?? pendingEarnings;
+  const displayPendingHours = financials?.pendingHours ?? pendingHours;
+  const displayAvailableBalance = financials?.availableBalance ?? displayCompletedEarnings;
+  const displayPendingWithdrawals = financials?.pendingWithdrawals ?? 0;
+
   const currencies = currenciesData?.currencies || [];
-  const teacherCurrency = currencies.find(
+  const teacherCurrency = (activeTeacher as any).currency || currencies.find(
     (c: Currency) => c.id === activeTeacher.currencyId
   );
   const currencySymbol = teacherCurrency?.symbol || teacherCurrency?.code || 'EGP';
@@ -114,7 +131,7 @@ export default function ViewTeacherModal({ isOpen, onClose, teacher }: ViewTeach
               </div>
               <div className="bg-blue-50 rounded-xl px-6 py-3 text-center border border-blue-100">
                 <p className="text-xs text-blue-600 mb-1">{t('hourlyRate') || (language === 'ar' ? 'السعر بالساعة' : 'Hourly Rate')}</p>
-                <p className="text-lg font-bold text-blue-700">{hourPrice.toFixed(2)} {currencySymbol}</p>
+                <p className="text-lg font-bold text-blue-700">{Number(hourPrice).toFixed(2)} {currencySymbol}</p>
               </div>
             </div>
           </div>
@@ -129,28 +146,28 @@ export default function ViewTeacherModal({ isOpen, onClose, teacher }: ViewTeach
                   <GraduationCap className="w-5 h-5 text-blue-600" />
                 </div>
                 <p className="text-sm text-gray-600 mb-1 text-start">{t('students') || (language === 'ar' ? 'عدد الطلاب' : 'Students')}</p>
-                <p className="text-2xl font-bold text-gray-900 text-start">{uniqueStudents.length}</p>
+                <p className="text-2xl font-bold text-gray-900 text-start">{totalStudentsCount}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="p-2 rounded-lg bg-orange-50 w-fit mb-3">
                   <Calendar className="w-5 h-5 text-orange-600" />
                 </div>
                 <p className="text-sm text-gray-600 mb-1 text-start">{t('todaySessions') || (language === 'ar' ? 'حصص اليوم' : "Today's Sessions")}</p>
-                <p className="text-2xl font-bold text-gray-900 text-start">{todaySessions.length}</p>
+                <p className="text-2xl font-bold text-gray-900 text-start">{todaySessionsCount}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="p-2 rounded-lg bg-green-50 w-fit mb-3">
                   <CheckCircle className="w-5 h-5 text-green-600" />
                 </div>
                 <p className="text-sm text-gray-600 mb-1 text-start">{t('completedSessions') || (language === 'ar' ? 'حصص مكتملة' : 'Completed')}</p>
-                <p className="text-2xl font-bold text-gray-900 text-start">{completedSessions.length}</p>
+                <p className="text-2xl font-bold text-gray-900 text-start">{completedSessionsCount}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="p-2 rounded-lg bg-yellow-50 w-fit mb-3">
                   <Clock className="w-5 h-5 text-yellow-600" />
                 </div>
                 <p className="text-sm text-gray-600 mb-1 text-start">{t('upcomingSessions') || (language === 'ar' ? 'حصص قادمة' : 'Upcoming')}</p>
-                <p className="text-2xl font-bold text-gray-900 text-start">{upcomingSessions.length}</p>
+                <p className="text-2xl font-bold text-gray-900 text-start">{upcomingSessionsCount}</p>
               </div>
             </div>
           </div>
@@ -173,38 +190,38 @@ export default function ViewTeacherModal({ isOpen, onClose, teacher }: ViewTeach
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="rounded-xl p-5 bg-blue-50 text-blue-700">
                 <p className="text-sm mb-2 text-start opacity-80">{t('totalHours') || (language === 'ar' ? 'إجمالي الساعات' : 'Total Hours')}</p>
-                <p className="text-2xl font-bold text-start">{totalHours.toFixed(1)} {language === 'ar' ? 'ساعة' : 'hrs'}</p>
+                <p className="text-2xl font-bold text-start">{Number(displayTotalHours).toFixed(1)} {language === 'ar' ? 'ساعة' : 'hrs'}</p>
               </div>
               <div className="rounded-xl p-5 bg-white text-gray-900 border border-gray-200">
                 <p className="text-sm mb-2 text-start opacity-80">{t('ratePerHour') || (language === 'ar' ? 'السعر / ساعة' : 'Rate / Hour')}</p>
-                <p className="text-2xl font-bold text-start">{hourPrice.toFixed(2)} {currencySymbol}</p>
+                <p className="text-2xl font-bold text-start">{Number(hourPrice).toFixed(2)} {currencySymbol}</p>
               </div>
               <div className="rounded-xl p-5 bg-green-50 text-green-700">
                 <p className="text-sm mb-2 text-start opacity-80">{t('totalOwed') || (language === 'ar' ? 'إجمالي المستحق' : 'Total Owed')}</p>
-                <p className="text-2xl font-bold text-start">{totalOwed.toFixed(2)} {currencySymbol}</p>
+                <p className="text-2xl font-bold text-start">{Number(displayTotalDue).toFixed(2)} {currencySymbol}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="rounded-xl p-5 bg-green-50 text-green-700">
                 <p className="text-sm mb-2 text-start opacity-80">{t('completedEarnings') || (language === 'ar' ? 'أرباح الحصص المكتملة' : 'Completed Earnings')}</p>
-                <p className="text-2xl font-bold text-start">{totalEarnings.toFixed(2)} {currencySymbol}</p>
-                <p className="text-xs opacity-60 text-start mt-1">{completedHours.toFixed(1)} {language === 'ar' ? 'ساعة' : 'hrs'}</p>
+                <p className="text-2xl font-bold text-start">{Number(displayCompletedEarnings).toFixed(2)} {currencySymbol}</p>
+                <p className="text-xs opacity-60 text-start mt-1">{Number(displayCompletedHours).toFixed(1)} {language === 'ar' ? 'ساعة' : 'hrs'}</p>
               </div>
               <div className="rounded-xl p-5 bg-orange-50 text-orange-700">
                 <p className="text-sm mb-2 text-start opacity-80">{t('pendingEarnings') || (language === 'ar' ? 'أرباح معلقة' : 'Pending Earnings')}</p>
-                <p className="text-2xl font-bold text-start">{pendingEarnings.toFixed(2)} {currencySymbol}</p>
-                <p className="text-xs opacity-60 text-start mt-1">{pendingHours.toFixed(1)} {language === 'ar' ? 'ساعة' : 'hrs'}</p>
+                <p className="text-2xl font-bold text-start">{Number(displayPendingEarnings).toFixed(2)} {currencySymbol}</p>
+                <p className="text-xs opacity-60 text-start mt-1">{Number(displayPendingHours).toFixed(1)} {language === 'ar' ? 'ساعة' : 'hrs'}</p>
               </div>
               <div className="rounded-xl p-5 bg-gray-50 text-gray-700 border border-gray-200">
                 <p className="text-sm mb-2 text-start opacity-80">{t('availableForWithdrawal') || (language === 'ar' ? 'رصيد متاح للسحب' : 'Available for Withdrawal')}</p>
-                <p className="text-2xl font-bold text-start">{totalEarnings.toFixed(2)} {currencySymbol}</p>
+                <p className="text-2xl font-bold text-start">{Number(displayAvailableBalance).toFixed(2)} {currencySymbol}</p>
               </div>
             </div>
 
             <div className="rounded-xl p-5 bg-red-50 text-red-700">
               <p className="text-sm mb-2 text-start opacity-80">{t('pendingWithdrawalRequests') || (language === 'ar' ? 'طلبات سحب معلقة' : 'Pending Withdrawal Requests')}</p>
-              <p className="text-2xl font-bold text-start">0.00 {currencySymbol}</p>
+              <p className="text-2xl font-bold text-start">{Number(displayPendingWithdrawals).toFixed(2)} {currencySymbol}</p>
             </div>
           </div>
 

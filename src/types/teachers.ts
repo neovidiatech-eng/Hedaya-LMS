@@ -34,6 +34,27 @@ export interface TeacherWithdrawal {
     [key: string]: any;
 }
 
+export interface TeacherFinancials {
+    totalHours?: number;
+    hourPrice?: number;
+    totalDue?: number;
+    totalEarnings?: number;
+    completedEarnings?: number;
+    completedHours?: number;
+    pendingEarnings?: number;
+    pendingHours?: number;
+    availableBalance?: number;
+    pendingWithdrawals?: number;
+}
+
+export interface TeacherStats {
+    totalStudents?: number;
+    completedSessions?: number;
+    todaySessions?: number;
+    upcomingSessions?: number;
+    financials?: TeacherFinancials;
+}
+
 export interface Teacher {
     id: string;
     user_id: string;
@@ -59,6 +80,7 @@ export interface Teacher {
     meeting_link?: string;
     WithdrawalsResult?: TeacherWithdrawal[];
     completedSessionsCount?: number;
+    stats?: TeacherStats;
 }
 
 export interface TeachersFetchResponse {

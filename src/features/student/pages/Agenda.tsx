@@ -94,6 +94,16 @@ export default function Agenda() {
   const isToday = (date: Date) =>
     date.toDateString() === new Date().toDateString();
 
+  const isJoinable = (startTime?: string, endTime?: string, link?: string) => {
+    if (!link || !startTime || !endTime) return false;
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    const joinableStart = new Date(start.getTime() - 15 * 60000);
+    return now >= joinableStart && now <= end;
+  };
+
   const days = getDaysInMonth(currentDate);
 
   const todayKey = formatDateLocal(new Date());
@@ -257,30 +267,40 @@ export default function Agenda() {
             </p>
           ) : (
             <div className="space-y-4">
-              {todaySessions.map((s) => (
-                <div
-                  key={s.id}
-                  className="bg-blue-50 border rounded-xl p-4 text-right"
-                >
-                  <p className="font-bold">{s.title}</p>
+              {todaySessions.map((s) => {
+                const statusLower = s.status?.toLowerCase();
+                const canJoin = statusLower === 'scheduled' && isJoinable(s.start_time, s.end_time, s.link);
 
-                  <p className="text-sm text-gray-600">
-                    {new Date(s.start_time).toLocaleTimeString()} -{" "}
-                    {new Date(s.end_time).toLocaleTimeString()}
-                  </p>
+                return (
+                  <div
+                    key={s.id}
+                    className="bg-blue-50 border rounded-xl p-4 text-right"
+                  >
+                    <p className="font-bold">{s.title}</p>
 
-                  <p className="text-xs mt-1">{s.status}</p>
+                    <p className="text-sm text-gray-600">
+                      {new Date(s.start_time).toLocaleTimeString()} -{" "}
+                      {new Date(s.end_time).toLocaleTimeString()}
+                    </p>
 
-                  {s.link && (
-                    <button
-                      onClick={() => window.open(s.link, "_blank")}
-                      className="w-full mt-3 bg-green-600 text-white py-2 rounded-lg text-sm"
-                    >
-                      Join Session
-                    </button>
-                  )}
-                </div>
-              ))}
+                    <p className="text-xs mt-1">{s.status}</p>
+
+                    {s.link && (
+                      <button
+                        onClick={() => canJoin && window.open(s.link, "_blank")}
+                        disabled={!canJoin}
+                        className={`w-full mt-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          canJoin
+                            ? "bg-green-600 hover:bg-green-700 text-white"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
+                        }`}
+                      >
+                        Join Session
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

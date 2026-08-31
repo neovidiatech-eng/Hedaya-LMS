@@ -10,12 +10,17 @@ interface SessionGroup {
   monthYear: string;
   duration: number;
   meetingLink: string;
+  link?: string;
   sessions: Array<{
     day: string;
     date: string;
     time: string;
     endTime: string;
-    status: 'scheduled' | 'completed' | 'cancelled';
+    status: 'scheduled' | 'completed' | 'cancelled' | 'missed';
+    start_time?: string;
+    startTime?: string;
+    end_time?: string;
+    link?: string;
   }>;
   packageInfo: {
     packageName: string;
@@ -36,6 +41,16 @@ interface ViewSessionDetailsModalProps {
 
 export default function ViewSessionDetailsModal({ isOpen, onClose, sessionGroup, onEditSession, onJoinSession, readOnly }: ViewSessionDetailsModalProps) {
   const { language } = useLanguage();
+
+  const isJoinable = (startTime?: string, endTime?: string, link?: string) => {
+    if (!link || !startTime || !endTime) return false;
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    const joinableStart = new Date(start.getTime() - 15 * 60000);
+    return now >= joinableStart && now <= end;
+  };
 
   const text = {
     title: { ar: 'تفاصيل الحصص', en: 'Session Details' },
@@ -60,6 +75,7 @@ export default function ViewSessionDetailsModal({ isOpen, onClose, sessionGroup,
     scheduled: { ar: 'مجدولة', en: 'Scheduled' },
     completed: { ar: 'مكتملة', en: 'Completed' },
     cancelled: { ar: 'ملغية', en: 'Cancelled' },
+    missed: { ar: 'فائتة', en: 'Missed' },
     close: { ar: 'إغلاق', en: 'Close' },
     edit: { ar: 'تعديل', en: 'Edit' },
     joinSession: { ar: 'دخول الحصة', en: 'Join Session' },
@@ -74,6 +90,8 @@ export default function ViewSessionDetailsModal({ isOpen, onClose, sessionGroup,
         return 'bg-green-50 text-green-700 border-green-200';
       case 'cancelled':
         return 'bg-red-50 text-red-700 border-red-200';
+      case 'missed':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -197,65 +215,72 @@ export default function ViewSessionDetailsModal({ isOpen, onClose, sessionGroup,
 
               <div className="p-4 max-h-96  overflow-y-auto no-scrollbar">
                 <div className="space-y-3">
-                  {sessionGroup.sessions.map((session, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-4" dir="rtl">
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <p className="text-xs text-gray-500 text-start">{text.day[language]}</p>
-                            <p className="font-bold text-gray-900 text-start">{session.day}</p>
+                  {sessionGroup.sessions.map((session, index) => {
+                    const sessionStartTime = session.start_time || session.startTime || session.time;
+                    const sessionEndTime = session.end_time || session.endTime || session.endTime;
+                    const meetingLink = session.link || sessionGroup?.meetingLink || sessionGroup?.link;
+                    const joinable = isJoinable(sessionStartTime, sessionEndTime, meetingLink);
+
+                    return (
+                      <div
+                        key={index}
+                        className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-4" dir="rtl">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <p className="text-xs text-gray-500 text-start">{text.day[language]}</p>
+                              <p className="font-bold text-gray-900 text-start">{session.day}</p>
+                            </div>
+
+                            <div className="border-r border-gray-300 pr-4">
+                              <p className="text-xs text-gray-500 text-start">{text.date[language]}</p>
+                              <p className="font-medium text-gray-900 text-start">{session.date}</p>
+                            </div>
+
+                            <div className="border-r border-gray-300 pr-4">
+                              <p className="text-xs text-gray-500 text-start">{text.time[language]}</p>
+                              <p className="font-medium text-gray-900 text-start" dir="ltr">
+                                {session.time} - {session.endTime}
+                              </p>
+                            </div>
+
+                            <div className="border-r border-gray-300 pr-4">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyle(session.status)}`}>
+                                {text[session.status] ? text[session.status][language] : session.status}
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="border-r border-gray-300 pr-4">
-                            <p className="text-xs text-gray-500 text-start">{text.date[language]}</p>
-                            <p className="font-medium text-gray-900 text-start">{session.date}</p>
+                          <div className="flex items-center gap-2">
+                            {(session.status === 'scheduled' || session.status === 'completed') && onJoinSession && localStorage.getItem('role') !== 'admin' && localStorage.getItem('role') !== 'super_admin' && (
+                              <button
+                                onClick={() => joinable && onJoinSession(sessionGroup.id, index)}
+                                disabled={!joinable || session.status === 'completed'}
+                                className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors text-sm font-medium ${
+                                  !joinable || session.status === 'completed'
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                                    : 'bg-green-600 hover:bg-green-700'
+                                }`}
+                              >
+                                <Video className="w-4 h-4" />
+                                {text.joinSession[language]}
+                              </button>
+                            )}
+                            {onEditSession && !readOnly && (
+                              <button
+                                onClick={() => onEditSession(sessionGroup.id, index)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title={text.edit[language]}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-
-                          <div className="border-r border-gray-300 pr-4">
-                            <p className="text-xs text-gray-500 text-start">{text.time[language]}</p>
-                            <p className="font-medium text-gray-900 text-start" dir="ltr">
-                              {session.time} - {session.endTime}
-                            </p>
-                          </div>
-
-                          <div className="border-r border-gray-300 pr-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyle(session.status)}`}>
-                              {text[session.status][language]}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {(session.status === 'scheduled' || session.status === 'completed') && onJoinSession && localStorage.getItem('role') !== 'admin' && localStorage.getItem('role') !== 'super_admin' && (
-                            <button
-                              onClick={() => session.status !== 'completed' && onJoinSession(sessionGroup.id, index)}
-                              disabled={session.status === 'completed'}
-                              className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors text-sm font-medium ${
-                                session.status === 'completed'
-                                  ? 'bg-gray-400 cursor-not-allowed'
-                                  : 'bg-green-600 hover:bg-green-700'
-                              }`}
-                            >
-                              <Video className="w-4 h-4" />
-                              {text.joinSession[language]}
-                            </button>
-                          )}
-                          {onEditSession && !readOnly && (
-                            <button
-                              onClick={() => onEditSession(sessionGroup.id, index)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title={text.edit[language]}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

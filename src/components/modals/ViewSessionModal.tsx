@@ -33,12 +33,25 @@ export default function ViewSessionModal({
   const { t, i18n } = useTranslation();
   const language = i18n.language.split("-")[0];
 
+  const isJoinable = (startTime?: string, endTime?: string, link?: string, notificationTime?: string | number) => {
+    if (!link || !startTime || !endTime) return false;
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    const bufferMinutes = Number(notificationTime || 15);
+    const joinableStart = new Date(start.getTime() - bufferMinutes * 60000);
+    return now >= joinableStart && now <= end;
+  };
+
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
       case "scheduled":
         return "bg-primary-50 text-blue-600 border-blue-100";
       case "completed":
         return "bg-emerald-50 text-emerald-600 border-emerald-100";
+      case "missed":
+        return "bg-amber-50 text-amber-600 border-amber-100";
       case "cancelled":
         return "bg-red-50 text-red-600 border-red-100";
       default:
@@ -252,7 +265,10 @@ export default function ViewSessionModal({
                   {t("meetingLink")}
                 </p>
                 <div className="flex items-center gap-3">
-                  {session.status?.toLowerCase() === 'completed' ? (
+                  {!isJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || (session as any).notification_time || 15) ||
+                  session.status?.toLowerCase() === 'completed' ||
+                  session.status?.toLowerCase() === 'cancelled' ||
+                  session.status?.toLowerCase() === 'missed' ? (
                     <button
                       disabled
                       className="flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 rounded-xl text-xs font-bold shadow-sm cursor-not-allowed opacity-60"
