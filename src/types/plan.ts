@@ -6,38 +6,28 @@ export type Currency = {
   code: string;
 };
 
-export type PlanType = "individual" | "group";
-
 export type Plan = {
   id: string;
   name_en: string;
   name_ar: string;
   description: string;
   price: string | number;
-  duration: number; // in days
+  duration: number;
   sessionsCount: number;
-  sessionTime: number; // in minutes
+  sessionTime: number;
   features: string[];
   currencyId: string;
   active: boolean;
   bestSeller: boolean;
   isHidden: boolean;
-  isGroup?: boolean;
-  maxStudents?: number;
-  planType?: PlanType;
   currency?: Currency;
-  createdAt?: string;
-  updatedAt?: string;
-
-  // Snake_case aliases from backend API
-  sessions_count?: number;
-  session_time?: number;
-  best_seller?: boolean;
-  is_hidden?: boolean;
-  is_group?: boolean;
-  max_students?: number;
-  plan_type?: PlanType;
+  planType?: "single" | "group" | string;
+  maxStudents?: number | string;
+  studentsNum?: number;
+  createdAt: string;
+  updatedAt: string;
 };
+
 
 export type PlansResponse = {
   message: string;
@@ -54,17 +44,17 @@ export type PlanResponse = {
 export interface PlanBody {
   name_en: string;
   name_ar: string;
-  price: number | string;
+  price: number;
   duration: number;
-  description?: string;
+  description: string;
   sessionsCount: number;
-  sessionTime: number;
-  currencyId: string;
   active: boolean;
   bestSeller: boolean;
-  isHidden?: boolean;
-  isGroup?: boolean;
+  isHidden: boolean;
+  features: string[];
+  currencyId: string;
+  sessionTime: number;
+  planType?: "individual" | "group";
   maxStudents?: number;
-  planType?: PlanType;
-  features?: string[];
 }
+

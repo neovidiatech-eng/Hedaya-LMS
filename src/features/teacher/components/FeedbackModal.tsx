@@ -38,6 +38,13 @@ export default function FeedbackModal({ visible, onClose, sessionId, sessionTitl
 
     sendReview({ id: sessionId, data: feedbackData }, {
       onSuccess: () => {
+        try {
+          const reviewed = JSON.parse(localStorage.getItem('reviewed_session_ids') || '[]');
+          if (sessionId && !reviewed.includes(sessionId)) {
+            reviewed.push(sessionId);
+            localStorage.setItem('reviewed_session_ids', JSON.stringify(reviewed));
+          }
+        } catch (e) {}
         reset();
         onClose();
       },

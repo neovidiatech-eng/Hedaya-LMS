@@ -33,12 +33,25 @@ export default function ViewSessionModal({
   const { t, i18n } = useTranslation();
   const language = i18n.language.split("-")[0];
 
+  const isJoinable = (startTime?: string, endTime?: string, link?: string, notificationTime?: string | number) => {
+    if (!link || !startTime || !endTime) return false;
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    const bufferMinutes = Number(notificationTime || 15);
+    const joinableStart = new Date(start.getTime() - bufferMinutes * 60000);
+    return now >= joinableStart && now <= end;
+  };
+
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
       case "scheduled":
         return "bg-primary-50 text-blue-600 border-blue-100";
       case "completed":
         return "bg-emerald-50 text-emerald-600 border-emerald-100";
+      case "missed":
+        return "bg-amber-50 text-amber-600 border-amber-100";
       case "cancelled":
         return "bg-red-50 text-red-600 border-red-100";
       default:
@@ -159,21 +172,11 @@ export default function ViewSessionModal({
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                    {t("studentLabel")} {session.isGroup ? `(${language === 'ar' ? 'جلسة جماعية' : 'Group Session'})` : ''}
+                    {t("studentLabel")}
                   </p>
-                  {session.groupStudents && session.groupStudents.length > 0 ? (
-                    <div className="flex flex-col gap-1 mt-1">
-                      {session.groupStudents.map((gs) => (
-                        <span key={gs.id} className="text-xs font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md w-fit">
-                          {gs.student?.user?.name || gs.studentId}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm font-bold text-gray-900">
-                      {session.student?.user?.name || "—"}
-                    </p>
-                  )}
+                  <p className="text-sm font-bold text-gray-900">
+                    {session.student?.user?.name || "—"}
+                  </p>
                 </div>
               </div>
 
@@ -190,6 +193,16 @@ export default function ViewSessionModal({
                   </p>
                 </div>
               </div>
+              {/* 
+              <div className="flex items-start gap-4 group">
+                <div className="p-2.5 rounded-xl bg-fuchsia-50 text-fuchsia-500 group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('subjectLabel')}</p>
+                  <p className="text-sm font-bold text-gray-900">{session.course.title ||""}</p>
+                </div>
+              </div>  */}
 
               <div className="flex items-start gap-4 group">
                 <div className="p-2.5 rounded-xl bg-amber-50 text-amber-500 group-hover:scale-110 transition-transform">
@@ -197,10 +210,12 @@ export default function ViewSessionModal({
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                    {language === 'ar' ? 'السعة القصوى' : 'Max Capacity'}
+                    {t("type")}
                   </p>
                   <p className="text-sm font-bold text-gray-900">
-                    {session.maxStudents ? `${session.maxStudents}` : (language === 'ar' ? 'غير محدود' : 'Unlimited')}
+                    {t(session.type?.toLowerCase() || "") ||
+                      session.type ||
+                      "—"}
                   </p>
                 </div>
               </div>
@@ -250,7 +265,10 @@ export default function ViewSessionModal({
                   {t("meetingLink")}
                 </p>
                 <div className="flex items-center gap-3">
-                  {session.status?.toLowerCase() === 'completed' ? (
+                  {!isJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || (session as any).notification_time || 15) ||
+                  session.status?.toLowerCase() === 'completed' ||
+                  session.status?.toLowerCase() === 'cancelled' ||
+                  session.status?.toLowerCase() === 'missed' ? (
                     <button
                       disabled
                       className="flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 rounded-xl text-xs font-bold shadow-sm cursor-not-allowed opacity-60"

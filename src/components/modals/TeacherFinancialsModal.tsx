@@ -3,12 +3,11 @@ import { X, Wallet, Calendar, CheckCircle2, History } from 'lucide-react';
 import { Teacher } from '../../types/teachers';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../features/admin/hooks/useCurrency';
-import { useGetTeacherStats } from '../../features/admin/hooks/useTeacher';
 
 interface TeacherFinancialsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  teacher: Teacher;
+  teacher: Teacher | null;
 }
 
 export default function TeacherFinancialsModal({ isOpen, onClose, teacher }: TeacherFinancialsModalProps) {
@@ -24,8 +23,6 @@ export default function TeacherFinancialsModal({ isOpen, onClose, teacher }: Tea
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [appliedStartDate, setAppliedStartDate] = useState('');
-  const [appliedEndDate, setAppliedEndDate] = useState('');
   const [isFiltered, setIsFiltered] = useState(false);
   const [filteredWithdrawals, setFilteredWithdrawals] = useState(teacher?.WithdrawalsResult || []);
   const [filteredSessions, setFilteredSessions] = useState(teacher?.completedSessionsCount || 0);
@@ -41,25 +38,8 @@ export default function TeacherFinancialsModal({ isOpen, onClose, teacher }: Tea
       setIsFiltered(false);
       setStartDate('');
       setEndDate('');
-      setAppliedStartDate('');
-      setAppliedEndDate('');
     }
   }, [teacher]);
-
-  const { data: stats } = useGetTeacherStats(
-    teacher?.id || '',
-    appliedStartDate,
-    appliedEndDate,
-    isOpen && !!teacher?.id && isFiltered
-  );
-
-  // Sync data if stats API updates when filtered
-  React.useEffect(() => {
-    if (stats?.data && isFiltered) {
-      setFilteredWithdrawals(stats.data.WithdrawalsResult || []);
-      setFilteredSessions(stats.data.completedSessionsCount || 0);
-    }
-  }, [stats, isFiltered]);
 
   if (!isOpen || !teacher) return null;
 
@@ -69,18 +49,12 @@ export default function TeacherFinancialsModal({ isOpen, onClose, teacher }: Tea
        // Reset filters
        setFilteredWithdrawals(teacher.WithdrawalsResult || []);
        setIsFiltered(false);
-       setAppliedStartDate('');
-       setAppliedEndDate('');
        return;
     }
 
-    setAppliedStartDate(startDate);
-    setAppliedEndDate(endDate);
-    setIsFiltered(true);
-
     const start = startDate ? new Date(startDate) : new Date(0);
     const end = endDate ? new Date(endDate) : new Date();
-
+    
     // Set end date to the end of the day
     end.setHours(23, 59, 59, 999);
 
@@ -91,13 +65,13 @@ export default function TeacherFinancialsModal({ isOpen, onClose, teacher }: Tea
     });
 
     setFilteredWithdrawals(withdrawals);
+    setIsFiltered(true);
+    
   };
 
   const handleReset = () => {
     setStartDate('');
     setEndDate('');
-    setAppliedStartDate('');
-    setAppliedEndDate('');
     setFilteredWithdrawals(teacher.WithdrawalsResult || []);
     setIsFiltered(false);
   };
@@ -195,7 +169,7 @@ export default function TeacherFinancialsModal({ isOpen, onClose, teacher }: Tea
                       {t('totalWalletBalance')}
                     </p>
                     <p className="text-xl font-bold text-gray-900">
-                      {stats?.data?.user?.wallet?.[0]?.balance ?? walletBalance} {currencySymbol}
+                      {walletBalance} {currencySymbol}
                     </p>
                   </div>
                 </div>

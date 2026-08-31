@@ -4,13 +4,10 @@ import Pagination from '../../../components/ui/Pagination';
 import { useTranslation } from 'react-i18next';
 import ViewSessionModal from '../../../components/modals/ViewSessionModal';
 import { Schedule } from '../../../types/scheduales';
-import { useSubjects } from '../../../features/admin/hooks/useSubjects';
-import { Subject } from '../../../types/subject';
-import { useJoinToSession, useUserSessions } from '../../../hooks/useSessions';
+import { useJoinToSession, useLeaveSession, useUserSessions } from '../../../hooks/useSessions';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
 import { useSettings } from '../../../contexts/SettingsContext';
 import CreateRequestModal from '../../../components/modals/CreateRequestModal';
-import { leaveSession } from '../../../services/SessionsServices';
 import FeedbackModal from '../../teacher/components/FeedbackModal';
 
 export default function Sessions() {
@@ -36,19 +33,22 @@ export default function Sessions() {
     return () => clearInterval(timer);
   }, []);
 
-  const isJoinable = (startTime: string, endTime: string, link: string) => {
-    if (!link) return false;
+  const isJoinable = (startTime: string, endTime: string, link: string, notificationTime?: string | number) => {
+    if (!link || !startTime || !endTime) return false;
     const start = new Date(startTime);
     const end = new Date(endTime);
-    const oneMinuteBefore = new Date(start.getTime() - 60000);
-    return now >= oneMinuteBefore && now <= end;
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    const bufferMinutes = Number(notificationTime || 15);
+    const joinableStart = new Date(start.getTime() - bufferMinutes * 60000);
+    return now >= joinableStart && now <= end;
   };
 
   const isEndable = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const fifteenMinsAfterStart = new Date(start.getTime() + 15 * 60000);
-    return now >= fifteenMinsAfterStart && now <= end;
+    const twentyMinsAfterEnd = new Date(end.getTime() + 20 * 60000);
+    return now >= fifteenMinsAfterStart && now <= twentyMinsAfterEnd;
   };
 
   const isRequestable = (startTime: string) => {
@@ -66,10 +66,45 @@ export default function Sessions() {
 
   const { data: allSchedules, isLoading } = useUserSessions(debouncedSearch);
   const { mutateAsync: joinToSession, isPending: isJoining } = useJoinToSession();
+  const { mutateAsync: leaveSession } = useLeaveSession();
+  const [endedSessionIds, setEndedSessionIds] = useState<string[]>([]);
+  const [autoHandledSessionIds, setAutoHandledSessionIds] = useState<string[]>([]);
 
   const itemsPerPage = 5;
 
   const scheduleData = allSchedules?.data || [];
+
+  // Automatically trigger leave & feedback modal for sessions that auto-closed after 20 minutes
+  useEffect(() => {
+    if (!scheduleData || scheduleData.length === 0 || showFeedbackModal) return;
+
+    const expiredSession = scheduleData.find((session: Schedule) => {
+      if (!session.start_time || !session.end_time) return false;
+      const status = session.status?.toLowerCase();
+      if (status === 'completed' || status === 'cancelled' || status === 'missed') return false;
+      if (endedSessionIds.includes(session.id) || autoHandledSessionIds.includes(session.id)) return false;
+
+      try {
+        const reviewedIds: string[] = JSON.parse(localStorage.getItem('reviewed_session_ids') || '[]');
+        if (reviewedIds.includes(session.id)) return false;
+      } catch (e) {}
+
+      const start = new Date(session.start_time);
+      const end = new Date(session.end_time);
+      const twentyMinsAfterEnd = new Date(end.getTime() + 20 * 60000);
+
+      const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60000);
+      return now >= twentyMinsAfterEnd && start >= fortyEightHoursAgo;
+    });
+
+    if (expiredSession) {
+      setAutoHandledSessionIds((prev) => [...prev, expiredSession.id]);
+      setEndedSessionIds((prev) => [...prev, expiredSession.id]);
+      leaveSession(expiredSession.id).catch((err) => console.log('Auto leave session error:', err));
+        setSessionForFeedback(expiredSession);
+        setShowFeedbackModal(true);
+      }
+  }, [now, scheduleData, endedSessionIds, autoHandledSessionIds, showFeedbackModal, leaveSession]);
   const displaySchedules: Schedule[] = [];
   const seenParents = new Set<string>();
 
@@ -149,21 +184,18 @@ export default function Sessions() {
     switch (status?.toLowerCase()) {
       case 'scheduled': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'planned': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'missed': return 'bg-red-50 text-red-700 border-red-200';
       case 'completed': return 'bg-green-50 text-green-700 border-green-200';
       case 'cancelled': return 'bg-red-50 text-red-700 border-red-200';
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
-  const { data: subjects } = useSubjects();
-  const dynamicsubjects = subjects?.subjects || [];
-
   const getSubjectName = (session: Schedule) => {
     if (session.subject) {
       return language === 'ar' ? session.subject.name_ar : session.subject.name_en;
     }
-    const subject = dynamicsubjects.find((s: Subject) => s.id === session.subjectId);
-    return subject ? (language === 'ar' ? subject.name_ar : subject.name_en) : 'subject';
+    return session.subjectId || 'subject';
   };
 
   return (
@@ -249,8 +281,8 @@ export default function Sessions() {
                               console.log(error);
                             }
                           }}
-                          disabled={isJoining || !isJoinable(session.start_time, session.end_time, session.link) || session.status?.toLowerCase() === 'completed'}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(isJoinable(session.start_time, session.end_time, session.link) && session.status?.toLowerCase() !== 'completed')
+                          disabled={isJoining || !isJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || 15) || session.status?.toLowerCase() === 'completed' || session.status?.toLowerCase() === 'cancelled' || session.status?.toLowerCase() === 'missed'}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(isJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || 15) && session.status?.toLowerCase() !== 'completed' && session.status?.toLowerCase() !== 'cancelled' && session.status?.toLowerCase() !== 'missed')
                             ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm hover:shadow-md'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                             } ${isJoining ? 'opacity-50 cursor-wait' : ''}`}
@@ -261,26 +293,27 @@ export default function Sessions() {
                       </td>
 
                         <td className="px-6 py-4 text-start">
-                                                   <button
-                          onClick={async () => {
-                            try {
-                              await leaveSession(session.id);
-                              setSessionForFeedback(session);
-                              setShowFeedbackModal(true);
-                            } catch (error) {
-                              console.log(error);
-                            }
-                          }}
-                          disabled={session.status?.toLowerCase() === 'completed' || !isEndable(session.start_time, session.end_time)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(session.status?.toLowerCase() === 'completed' || !isEndable(session.start_time, session.end_time))
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
-                          }`}
-                        >
-                          <X className="w-4 h-4" />
-                          <span className="text-sm">{t('endSession') || 'End Session'}</span>
-                        </button>
-                                            </td>
+                          <button
+                            onClick={async () => {
+                              try {
+                                setEndedSessionIds((prev) => [...prev, session.id]);
+                                await leaveSession(session.id);
+                                setSessionForFeedback(session);
+                                setShowFeedbackModal(true);
+                              } catch (error) {
+                                console.log(error);
+                              }
+                            }}
+                            disabled={session.status?.toLowerCase() === 'completed' || endedSessionIds.includes(session.id) || !isEndable(session.start_time, session.end_time)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(session.status?.toLowerCase() === 'completed' || endedSessionIds.includes(session.id) || !isEndable(session.start_time, session.end_time))
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
+                            }`}
+                          >
+                            <X className="w-4 h-4" />
+                            <span className="text-sm">{t('endSession') || 'End Session'}</span>
+                          </button>
+                        </td>
 
                       <td className="px-3 py-3 text-start">
                         <button

@@ -1,5 +1,5 @@
 import api from "../../../lib/axios"
-import { CreateTeacherInput, Teacher, TeachersData, TeachersFetchResponse, UpdateTeacherInput, TeacherStatsResponse } from "../../../types/teachers"
+import { CreateTeacherInput, Teacher, TeachersData, TeachersFetchResponse, UpdateTeacherInput } from "../../../types/teachers"
 
 export interface GetTeachersParams {
     page?: number;
@@ -78,12 +78,3 @@ export const exportTeacher = async (): Promise<void> => {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 };
-
-export const getTeacherStats = async (id: string, startMonth: string, endMonth: string): Promise<TeacherStatsResponse> => {
-    const params ={
-        startMonth,
-        endMonth
-    }
-    const response = await api.get(`/teachers/stats/${id}`, {params});
-    return response.data
-}

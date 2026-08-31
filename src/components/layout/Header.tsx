@@ -50,7 +50,9 @@ export default function Header({
   const handleLogout = () => {
     disconnectSocket();
     localStorage.removeItem("platform_settings");
+    localStorage.removeItem("hedaya_platform_settings");
     sessionStorage.removeItem("platform_settings");
+    sessionStorage.removeItem("hedaya_platform_settings");
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     localStorage.removeItem("role");

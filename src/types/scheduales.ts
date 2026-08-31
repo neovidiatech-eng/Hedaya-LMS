@@ -1,32 +1,27 @@
 export type ScheduleType = 'full' | 'half';
 
 export interface CreateSchedulePayload {
-    studentId?: string;
-    studentIds?: string[];
+    studentId: string;
     teacherId: string;
     subject_id: string;
     title: string;
     description?: string;
     link: string;
-    isGroup?: boolean;
-    maxStudents?: number | string;
     notes?: string;
     start_time: string;
+    // type: ScheduleType;
     notification_Time: string;
 }
 
 export interface UpdateSchedulePayload {
-    title?: string;
+    title: string;
     description?: string;
-    link?: string;
+    link: string;
     notes?: string;
-    status?: string;
-    start_time?: string;
-    notification_Time?: string;
-    studentIds?: string[];
-    studentId?: string;
-    maxStudents?: number | string;
-    isGroup?: boolean;
+    status: string;
+    start_time: string;
+    // type: ScheduleType;
+    notification_Time: string;
 }
 export type DayOfWeek =
     | 'Saturday'
@@ -38,22 +33,19 @@ export type DayOfWeek =
     | 'Friday';
 
 export interface CreateRecurringSchedulePayload {
-    studentId?: string;
-    studentIds?: string[];
+    studentId: string;
     teacherId: string;
     subject_id: string;
     title: string;
     description?: string;
     link: string;
     notes?: string;
-    count?: number;
-    isGroup?: boolean;
-    maxStudents?: number | string;
     startTime: string;
     days: DayOfWeek[];
     startDate: string;
-    endDate?: string;
+    endDate: string;
     notification_Time: string;
+    // type: ScheduleType;
 }
 
 // Aliases for Services
@@ -110,34 +102,25 @@ export interface ScheduleSubject {
     updatedAt: string;
 }
 
-export interface GroupStudentItem {
-    id: string;
-    studentId: string;
-    student?: Student;
-}
-
 export interface Schedule {
     id: string;
     teacherId: string;
-    studentId: string | null;
+    studentId: string;
     subjectId: string;
     status: string;
     title: string;
     description: string;
-    type?: string;
+    type: string;
     start_time: string;
     end_time: string;
     link: string;
     notes: string | null;
     createdAt: string;
     updatedAt: string;
-    is_recurring?: boolean;
+    is_recurring: boolean;
     day_of_week: string | null;
     parent_recurring_id: string | null;
-    isGroup?: boolean;
-    maxStudents?: number | string;
-    groupStudents?: GroupStudentItem[];
-    student?: Student;
+    student: Student;
     teacher: Teacher;
     subject?: ScheduleSubject;
 }

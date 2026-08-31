@@ -83,27 +83,22 @@ export default function Sessions() {
         // Batch / Recurring Scheduling
         const { formData, sessions, selectedDays } = data as MultipleSessionsPayload;
 
-        const tomorrowStr = (() => {
-          const tom = new Date();
-          tom.setDate(tom.getDate() + 1);
-          return tom.toISOString().split("T")[0];
+        const todayStr = (() => {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          return `${y}-${m}-${d}`;
         })();
 
-        const rawStartDate = formData.batchStartDate || (formData.monthYear ? `${formData.monthYear}-01` : tomorrowStr);
-        const rawEndDate = formData.batchEndDate || (formData.monthYear ? `${formData.monthYear}-28` : tomorrowStr);
+        const rawStartDate = formData.batchStartDate || (formData.monthYear ? `${formData.monthYear}-01` : todayStr);
+        const rawEndDate = formData.batchEndDate || (formData.monthYear ? `${formData.monthYear}-28` : todayStr);
 
-        const startDate = rawStartDate < tomorrowStr ? tomorrowStr : rawStartDate;
+        const startDate = rawStartDate < todayStr ? todayStr : rawStartDate;
         const endDate = rawEndDate;
 
-        const studentField = formData.student;
-        const rawStudentIds = Array.isArray(studentField) ? studentField : (studentField ? [studentField] : []);
-        const studentIds = rawStudentIds.filter((id: any) => typeof id === "string" && id.trim() !== "");
-        const isGroup = formData.isGroup || studentIds.length > 1;
-        const maxStudents = (formData.maxStudents !== undefined && formData.maxStudents !== null && formData.maxStudents !== '') ? (isNaN(Number(formData.maxStudents)) ? formData.maxStudents : Number(formData.maxStudents)) : undefined;
-
         await createRecurringSchedule.mutateAsync({
-          ...(studentIds.length === 1 ? { studentId: studentIds[0] } : {}),
-          studentIds,
+          studentId: formData.student,
           teacherId: formData.teacher,
           subject_id: formData.subject,
           title: formData.title,
@@ -115,8 +110,7 @@ export default function Sessions() {
           startDate,
           endDate,
           notification_Time: formData.notification_Time || "10",
-          isGroup,
-          ...(maxStudents !== undefined ? { maxStudents } : {}),
+          // type: formData.type,
         });
       } else {
         // Single Session Scheduling
@@ -124,15 +118,8 @@ export default function Sessions() {
         const [hour, minute] = data.startTime.split(":").map(Number);
         const localDate = new Date(year, month - 1, day, hour, minute);
 
-        const studentField = data.student;
-        const rawStudentIds = Array.isArray(studentField) ? data.student : (data.student ? [data.student] : []);
-        const studentIds = rawStudentIds.filter((id: any) => typeof id === "string" && id.trim() !== "");
-        const isGroup = data.isGroup || studentIds.length > 1;
-        const maxStudents = (data.maxStudents !== undefined && data.maxStudents !== null && data.maxStudents !== '') ? (isNaN(Number(data.maxStudents)) ? data.maxStudents : Number(data.maxStudents)) : undefined;
-
         await createSchedule.mutateAsync({
-          ...(studentIds.length === 1 ? { studentId: studentIds[0] } : {}),
-          studentIds,
+          studentId: data.student,
           teacherId: data.teacher,
           subject_id: data.subject,
           title: data.title,
@@ -140,9 +127,8 @@ export default function Sessions() {
           ...(!data.notes ? {} : { notes: data.notes }),
           link: data.meetingLink || "",
           start_time: localDate.toISOString(),
+          // type: data.type,
           notification_Time: data.notification_Time,
-          isGroup,
-          ...(maxStudents !== undefined ? { maxStudents } : {}),
         });
       }
       setShowAddModal(false);
@@ -461,9 +447,7 @@ export default function Sessions() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-700 text-right">
-                    {session.groupStudents && session.groupStudents.length > 0
-                      ? session.groupStudents.map((gs) => gs.student?.user?.name || gs.studentId).filter(Boolean).join(", ")
-                      : session.student?.user?.name || "—"}
+                    {session.student.user.name}
                   </td>
                   <td className="px-6 py-4 text-gray-700 text-right">
                     {session.teacher.user.name}

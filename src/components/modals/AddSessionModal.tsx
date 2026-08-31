@@ -92,7 +92,7 @@ export default function AddSessionModal({
     defaultValues: {
       type: 'full',
       notification_Time: '10',
-      student: [],
+      student: '',
       teacher: '',
       subject: '',
       title: '',
@@ -101,19 +101,26 @@ export default function AddSessionModal({
       platform: 'zoom',
       meetingLink: '',
       sessionDate: (() => {
-        const tom = new Date();
-        tom.setDate(tom.getDate() + 1);
-        return tom.toISOString().split('T')[0];
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       })(),
       batchStartDate: (() => {
-        const tom = new Date();
-        tom.setDate(tom.getDate() + 1);
-        return tom.toISOString().split('T')[0];
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       })(),
       batchEndDate: (() => {
         const nextMonth = new Date();
         nextMonth.setDate(nextMonth.getDate() + 29);
-        return nextMonth.toISOString().split('T')[0];
+        const y = nextMonth.getFullYear();
+        const m = String(nextMonth.getMonth() + 1).padStart(2, '0');
+        const d = String(nextMonth.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       })(),
       startTime: '14:00',
       endTime: '15:00',
@@ -242,14 +249,16 @@ export default function AddSessionModal({
 
     if (!startDateStr || !endDateStr || !watchSelectedDays.length) return sessions;
 
-    const startDate = new Date(startDateStr);
-    const endDate = new Date(endDateStr);
+    const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
 
-    const tomorrow = new Date();
-    tomorrow.setHours(0, 0, 0, 0);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const endDate = new Date(endYear, endMonth - 1, endDay);
 
-    const currentDate = startDate < tomorrow ? new Date(tomorrow) : new Date(startDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const currentDate = startDate < today ? new Date(today) : new Date(startDate);
 
     while (currentDate <= endDate) {
       const currentDay = currentDate.toLocaleDateString('en-US', {
@@ -409,7 +418,6 @@ export default function AddSessionModal({
                   control={control}
                   render={({ field }) => (
                     <CustomSelect
-                      mode="multiple"
                       options={
                         students?.data?.studentsData?.map(
                           (student: Student) => ({
@@ -472,40 +480,25 @@ export default function AddSessionModal({
             {/* Plan Card */}
             <StudentPlanCard studentPlanInfo={studentPlanInfo} />
 
-            {/* Title & Max Students */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
-              <div className="sm:col-span-2">
-                <label className="label">
-                  <Video className="w-3.5 h-3.5" />
-                  {t('sessionTitleLabel') || 'Session Title'}
-                </label>
+            {/* Title */}
+            <div className="mb-6">
+              <label className="label">
+                <Video className="w-3.5 h-3.5" />
+                {t('sessionTitleLabel') || 'Session Title'}
+              </label>
 
-                <input
-                  type="text"
-                  {...register('title')}
-                  placeholder={t('sessionTitlePlaceholder') || 'Session Title'}
-                  className="input"
-                />
+              <input
+                type="text"
+                {...register('title')}
+                placeholder={t('sessionTitlePlaceholder') || 'Session Title'}
+                className="input"
+              />
 
-                {errors.title && (
-                  <p className="error-text">
-                    {errors.title.message as string}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="label">
-                  {language === 'ar' ? 'السعة القصوى' : 'Max Students'}
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  {...register('maxStudents')}
-                  placeholder="5"
-                  className="input"
-                />
-              </div>
+              {errors.title && (
+                <p className="error-text">
+                  {errors.title.message as string}
+                </p>
+              )}
             </div>
 
             {/* Description */}
@@ -626,7 +619,6 @@ export default function AddSessionModal({
                   render={({ field }) => (
                     <CustomSelect
                       options={[
-                        { value: '5', label: language === 'ar' ? 'قبل 5 دقائق' : '5 minutes before' },
                         { value: '10', label: language === 'ar' ? 'قبل 10 دقائق' : '10 minutes before' },
                         { value: '30', label: language === 'ar' ? 'قبل 30 دقيقة' : '30 minutes before' },
                         { value: '60', label: language === 'ar' ? 'قبل ساعة' : '1 hour before' },

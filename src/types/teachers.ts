@@ -1,5 +1,3 @@
-import { Currency } from './currency';
-
 export interface TeacherSubject {
     id: string;
     teacherId: string;
@@ -36,6 +34,27 @@ export interface TeacherWithdrawal {
     [key: string]: any;
 }
 
+export interface TeacherFinancials {
+    totalHours?: number;
+    hourPrice?: number;
+    totalDue?: number;
+    totalEarnings?: number;
+    completedEarnings?: number;
+    completedHours?: number;
+    pendingEarnings?: number;
+    pendingHours?: number;
+    availableBalance?: number;
+    pendingWithdrawals?: number;
+}
+
+export interface TeacherStats {
+    totalStudents?: number;
+    completedSessions?: number;
+    todaySessions?: number;
+    upcomingSessions?: number;
+    financials?: TeacherFinancials;
+}
+
 export interface Teacher {
     id: string;
     user_id: string;
@@ -61,6 +80,7 @@ export interface Teacher {
     meeting_link?: string;
     WithdrawalsResult?: TeacherWithdrawal[];
     completedSessionsCount?: number;
+    stats?: TeacherStats;
 }
 
 export interface TeachersFetchResponse {
@@ -111,53 +131,3 @@ export interface UpdateTeacherInput {
 }
 
 export type TeachersData = TeachersFetchResponse['data'];
-
-export interface TeacherStatsUser {
-    id: string;
-    email: string;
-    nationality: string | null;
-    country: string | null;
-    password?: string;
-    name: string;
-    phone: string;
-    createdAt: string;
-    updatedAt: string;
-    confirmAt: string | null;
-    roleId: string | null;
-    code_country: string;
-    status: string;
-    googleId: string | null;
-    provider: string;
-    timezone: string;
-    fcmToken: string;
-    notes: string;
-    wallet: TeacherWallet[];
-}
-
-export interface TeacherStats {
-    id: string;
-    user_id: string;
-    currencyId: string;
-    hour_price: number;
-    meeting_link: string;
-    gender: 'male' | 'female' | 'Male' | 'Female';
-    active: boolean;
-    roleId: string | null;
-    createdAt: string;
-    updatedAt: string;
-    avgRating: number;
-    totalReviews: number;
-    user: TeacherStatsUser;
-    currency: Currency;
-    teacherSubjects: TeacherSubject[];
-    WithdrawalsResult: TeacherWithdrawal[];
-    completedSessionsCount: number;
-}
-
-export interface TeacherStatsResponse {
-    message: string;
-    status: number;
-    lang?: string;
-    data: TeacherStats;
-}
-

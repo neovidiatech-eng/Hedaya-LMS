@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useState } from 'react';
 import { usePlans } from '../../features/admin/hooks/usePlans';
 
+
 interface PlanSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,12 +18,12 @@ export default function PlanSelectionModal({ isOpen, onClose, onConfirm }: PlanS
   const text = {
     title: { ar: 'تجديد الاشتراك', en: 'Renew Subscription' },
     selectPlan: { ar: 'اختر الخطة', en: 'Select Plan' },
-    selectPlaceholder: { ar: '-- اختر خطة اشتراك --', en: '-- Choose a subscription plan --' },
+    selectPlaceholder: { ar: 'اختر خطة اشتراك', en: 'Choose a subscription plan' },
     confirm: { ar: 'تأكيد التجديد', en: 'Confirm Renewal' },
     cancel: { ar: 'إلغاء', en: 'Cancel' },
     loading: { ar: 'جارٍ التحميل...', en: 'Loading...' },
     error: { ar: 'خطأ في جلب الخطط', en: 'Error fetching plans' },
-    noPlans: { ar: 'لا توجد خطط متاحة حالياً', en: 'No active plans available' },
+    noPlans: { ar: 'لا توجد خطط متاحة', en: 'No plans available' },
   };
 
   if (!isOpen) return null;
@@ -33,8 +34,6 @@ export default function PlanSelectionModal({ isOpen, onClose, onConfirm }: PlanS
       setSelectedPlanId('');
     }
   };
-
-  const availablePlans = (plans || []).filter(p => p.active && !p.isHidden);
 
   return (
     <div className="fixed inset-0 !mt-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -62,31 +61,27 @@ export default function PlanSelectionModal({ isOpen, onClose, onConfirm }: PlanS
             <p className="text-center text-red-500 py-4">{text.error[language]}</p>
           )}
 
-          {!isLoading && !error && availablePlans.length === 0 && (
+          {!isLoading && !error && plans && plans.length === 0 && (
             <p className="text-center text-gray-500 py-4">{text.noPlans[language]}</p>
           )}
 
-          {!isLoading && !error && availablePlans.length > 0 && (
+          {!isLoading && !error && plans && plans.length > 0 && (
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {text.selectPlan[language]}
               </label>
               <select
                 value={selectedPlanId}
+              
                 onChange={e => setSelectedPlanId(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition text-gray-800"
               >
                 <option value="" disabled>{text.selectPlaceholder[language]}</option>
-                {availablePlans.map((plan) => {
-                  const planName = language === 'ar' ? plan.name_ar : plan.name_en;
-                  const priceStr = `${plan.price} ${plan.currency?.code || ''}`;
-                  const sessionsStr = `${plan.sessionsCount ?? plan.sessions_count ?? 0} ${language === 'ar' ? 'حصة' : 'sessions'}`;
-                  return (
-                    <option key={plan.id} value={plan.id}>
-                      {planName} - {priceStr} ({sessionsStr})
-                    </option>
-                  );
-                })}
+                {plans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {language === 'ar' ? plan.name_ar : plan.name_en}
+                  </option>
+                ))}
               </select>
             </div>
           )}
@@ -105,7 +100,7 @@ export default function PlanSelectionModal({ isOpen, onClose, onConfirm }: PlanS
             disabled={!selectedPlanId}
             className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
               selectedPlanId
-                ? 'bg-primary text-white hover:bg-primary/90 shadow-sm'
+                ? 'bg-primary text-white hover:bg-primary/90'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
