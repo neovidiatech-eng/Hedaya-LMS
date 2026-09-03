@@ -1,7 +1,7 @@
 export type ScheduleType = 'full' | 'half';
 
 export interface CreateSchedulePayload {
-    studentId: string;
+    studentId: string | string[];
     teacherId: string;
     subject_id: string;
     title: string;
@@ -33,7 +33,7 @@ export type DayOfWeek =
     | 'Friday';
 
 export interface CreateRecurringSchedulePayload {
-    studentId: string;
+    studentId: string | string[];
     teacherId: string;
     subject_id: string;
     title: string;
