@@ -138,6 +138,63 @@ export default function AddSessionModal({
   const watchStartTime = watch('startTime');
   const watchTeacher = watch('teacher');
 
+  const allStudents: Student[] = useMemo(() => {
+    return students?.data?.studentsData || [];
+  }, [students]);
+
+  const selectedFirstStudent = useMemo(() => {
+    if (!allStudents.length) return null;
+    const studentId = Array.isArray(watchStudent) ? watchStudent[0] : watchStudent;
+    if (!studentId) return null;
+    return allStudents.find((s) => String(s.id) === String(studentId)) || null;
+  }, [watchStudent, allStudents]);
+
+  const selectedGroupPlanId = useMemo(() => {
+    if (!selectedFirstStudent) return null;
+    if (selectedFirstStudent.plan?.planType === 'group') {
+      return selectedFirstStudent.planId || selectedFirstStudent.plan?.id || null;
+    }
+    return null;
+  }, [selectedFirstStudent]);
+
+  const isGroupPlan = Boolean(selectedGroupPlanId);
+
+  const studentOptions = useMemo(() => {
+    if (!allStudents.length) return [];
+
+    if (isGroupPlan && selectedGroupPlanId) {
+      // Only show students who share the EXACT SAME group plan
+      return allStudents
+        .filter((s: Student) => {
+          const sPlanId = s.planId || s.plan?.id;
+          return s.plan?.planType === 'group' && String(sPlanId) === String(selectedGroupPlanId);
+        })
+        .map((student: Student) => {
+          const planName = language === 'ar' ? student.plan?.name_ar : student.plan?.name_en;
+          const label = planName ? `${student.user.name} (${planName})` : student.user.name;
+          return {
+            value: String(student.id),
+            label,
+            searchText: student.user.name,
+          };
+        });
+    }
+
+    // Default: show all students with group indicator tag
+    return allStudents.map((student: Student) => {
+      const isGroup = student.plan?.planType === 'group';
+      const planName = language === 'ar' ? student.plan?.name_ar : student.plan?.name_en;
+      const groupTag = isGroup
+        ? ` [${language === 'ar' ? 'خطة جماعية' : 'Group'}]`
+        : (planName ? ` (${planName})` : '');
+      return {
+        value: String(student.id),
+        label: `${student.user.name}${groupTag}`,
+        searchText: `${student.user.name} ${groupTag}`,
+      };
+    });
+  }, [allStudents, isGroupPlan, selectedGroupPlanId, language]);
+
   const watchSelectedDays =
     (watch('selectedDays') as DayOfWeek[]) || [];
 
@@ -165,15 +222,7 @@ export default function AddSessionModal({
     setValue('endTime', `${endHours}:${endMinutes}`);
   }, [watchStartTime, watchType, setValue]);
 
-  const selectedStudentData = useMemo(() => {
-    if (!watchStudent || !students?.data?.studentsData) return null;
-
-    return (
-      students.data.studentsData.find(
-        (s: Student) => String(s.id) === String(watchStudent)
-      ) || null
-    );
-  }, [watchStudent, students]);
+  const selectedStudentData = selectedFirstStudent;
 
   const selectedTeacherData = useMemo(() => {
     if (!watchTeacher || !instructors?.teachers) return null;
@@ -416,22 +465,37 @@ export default function AddSessionModal({
                 <Controller
                   name="student"
                   control={control}
-                  render={({ field }) => (
-                    <CustomSelect
-                      options={
-                        students?.data?.studentsData?.map(
-                          (student: Student) => ({
-                            value: String(student.id),
-                            label: student.user.name,
-                            searchText: student.user.name,
-                          })
-                        ) || []
+                  render={({ field }) => {
+                    const handleChange = (val: any) => {
+                      if (Array.isArray(val)) {
+                        if (val.length === 0) {
+                          field.onChange('');
+                        } else {
+                          field.onChange(val);
+                        }
+                      } else if (val) {
+                        const chosen = allStudents.find((s) => String(s.id) === String(val));
+                        if (chosen?.plan?.planType === 'group') {
+                          field.onChange([String(val)]);
+                        } else {
+                          field.onChange(String(val));
+                        }
+                      } else {
+                        field.onChange('');
                       }
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder={t('selectStudent') || 'Select Student'}
-                    />
-                  )}
+                    };
+
+                    return (
+                      <CustomSelect
+                        options={studentOptions}
+                        value={field.value || (isGroupPlan ? [] : undefined)}
+                        onChange={handleChange}
+                        mode={isGroupPlan ? 'multiple' : undefined}
+                        allowClear
+                        placeholder={t('selectStudent') || 'Select Student'}
+                      />
+                    );
+                  }}
                 />
 
                 {errors.student && (

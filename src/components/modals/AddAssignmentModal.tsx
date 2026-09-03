@@ -129,6 +129,7 @@ export default function AddAssignmentModal({ isOpen, onClose, initialData }: Add
                 value={watch('studentId')}
                 onChange={(val) => setValue('studentId', val, { shouldValidate: true })}
                 options={studentsOptions}
+                mode='multiple'
                 disabled={isLoadingStudents}
                 placeholder={isLoadingStudents ? text.loading[language] : text.student[language]}
               />
