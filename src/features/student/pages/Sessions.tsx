@@ -9,6 +9,13 @@ import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
 import { useSettings } from '../../../contexts/SettingsContext';
 import CreateRequestModal from '../../../components/modals/CreateRequestModal';
 import FeedbackModal from '../../teacher/components/FeedbackModal';
+import { 
+  isSessionJoinable, 
+  isSessionEndable, 
+  isSessionRequestable, 
+  isSessionEnded, 
+  markSessionAsReviewed 
+} from '../../../utils/sessionUtils';
 
 export default function Sessions() {
   const { t, i18n } = useTranslation();
@@ -32,37 +39,6 @@ export default function Sessions() {
     const timer = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
-
-  const isJoinable = (startTime: string, endTime: string, link: string, notificationTime?: string | number) => {
-    if (!link || !startTime || !endTime) return false;
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
-    const bufferMinutes = Number(notificationTime || 15);
-    const joinableStart = new Date(start.getTime() - bufferMinutes * 60000);
-    return now >= joinableStart && now <= end;
-  };
-
-  const isEndable = (startTime: string, endTime: string) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const fifteenMinsAfterStart = new Date(start.getTime() + 15 * 60000);
-    const twentyMinsAfterEnd = new Date(end.getTime() + 20 * 60000);
-    return now >= fifteenMinsAfterStart && now <= twentyMinsAfterEnd;
-  };
-
-  const isRequestable = (startTime: string) => {
-    const start = new Date(startTime);
-    return now < start;
-  };
-
-  useEffect(() => {
-    if (searchTerm.length > 2) {
-      setDebouncedSearch(searchTerm);
-    } else {
-      setDebouncedSearch("");
-    }
-  }, [searchTerm]);
 
   const { data: allSchedules, isLoading } = useUserSessions(debouncedSearch);
   const { mutateAsync: joinToSession, isPending: isJoining } = useJoinToSession();
@@ -281,8 +257,8 @@ export default function Sessions() {
                               console.log(error);
                             }
                           }}
-                          disabled={isJoining || !isJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || 15) || session.status?.toLowerCase() === 'completed' || session.status?.toLowerCase() === 'cancelled' || session.status?.toLowerCase() === 'missed'}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(isJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || 15) && session.status?.toLowerCase() !== 'completed' && session.status?.toLowerCase() !== 'cancelled' && session.status?.toLowerCase() !== 'missed')
+                          disabled={isJoining || !isSessionJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || 15, now) || isSessionEnded(session, endedSessionIds)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(isSessionJoinable(session.start_time, session.end_time, session.link, (session as any).notification_Time || 15, now) && !isSessionEnded(session, endedSessionIds))
                             ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm hover:shadow-md'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                             } ${isJoining ? 'opacity-50 cursor-wait' : ''}`}
@@ -294,25 +270,27 @@ export default function Sessions() {
 
                         <td className="px-6 py-4 text-start">
                           <button
-                            onClick={async () => {
-                              try {
-                                setEndedSessionIds((prev) => [...prev, session.id]);
-                                await leaveSession(session.id);
-                                setSessionForFeedback(session);
-                                setShowFeedbackModal(true);
-                              } catch (error) {
-                                console.log(error);
-                              }
-                            }}
-                            disabled={session.status?.toLowerCase() === 'completed' || endedSessionIds.includes(session.id) || !isEndable(session.start_time, session.end_time)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(session.status?.toLowerCase() === 'completed' || endedSessionIds.includes(session.id) || !isEndable(session.start_time, session.end_time))
-                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
-                            }`}
-                          >
-                            <X className="w-4 h-4" />
-                            <span className="text-sm">{t('endSession') || 'End Session'}</span>
-                          </button>
+                          onClick={async () => {
+                            try {
+                              setEndedSessionIds((prev) => [...prev, session.id]);
+                              markSessionAsReviewed(session.id);
+                              await leaveSession(session.id);
+                              setSessionForFeedback(session);
+                              setShowFeedbackModal(true);
+                            } catch (error) {
+                              console.log(error);
+                            }
+                          }}
+                          disabled={isSessionEnded(session, endedSessionIds) || !isSessionEndable(session.start_time, session.end_time, now)}
+                          title={!isSessionEndable(session.start_time, session.end_time, now) && !isSessionEnded(session, endedSessionIds) ? (language === 'ar' ? 'زرار إنهاء الحصة متاح بعد مرور 85% من وقت الحصة' : 'End session is available after 85% of session duration') : undefined}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${(isSessionEnded(session, endedSessionIds) || !isSessionEndable(session.start_time, session.end_time, now))
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md'
+                          }`}
+                        >
+                          <X className="w-4 h-4" />
+                          <span className="text-sm">{t('endSession') || 'End Session'}</span>
+                        </button>
                         </td>
 
                       <td className="px-3 py-3 text-start">
@@ -321,13 +299,13 @@ export default function Sessions() {
                             setSessionForRequest(session);
                             setIsRequestModalOpen(true);
                           }}
-                          disabled={session.status?.toLowerCase() === 'completed' || !isRequestable(session.start_time)}
+                          disabled={isSessionEnded(session, endedSessionIds) || !isSessionRequestable(session.start_time, now)}
                           className={`flex items-center gap-2 px-3 py-2 rounded-xl font-normal transition-all shadow-sm hover:shadow-md ${
-                            (session.status?.toLowerCase() === 'completed' || !isRequestable(session.start_time)) 
+                            (isSessionEnded(session, endedSessionIds) || !isSessionRequestable(session.start_time, now)) 
                               ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
                               : 'text-white hover:opacity-90'
                           }`}
-                          style={(session.status?.toLowerCase() === 'completed' || !isRequestable(session.start_time)) ? {} : { backgroundColor: settings.primaryColor }}
+                          style={(session.status?.toLowerCase() === 'completed' || !isSessionRequestable(session.start_time, now)) ? {} : { backgroundColor: settings.primaryColor }}
                         >
                           <Plus className="w-5 h-5" />
                           {isRtl ? 'تقديم طلب' : 'Add Request'}

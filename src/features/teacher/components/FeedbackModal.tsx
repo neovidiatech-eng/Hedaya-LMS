@@ -7,6 +7,8 @@ import { getFeedbackSchema, FeedbackFormData } from '../../../lib/schemas/Feedba
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useSendReview } from '../hooks/useTeacherRequest';
 
+import { markSessionAsReviewed } from '../../../utils/sessionUtils';
+
 interface FeedbackModalProps {
   visible: boolean;
   onClose: () => void;
@@ -38,13 +40,7 @@ export default function FeedbackModal({ visible, onClose, sessionId, sessionTitl
 
     sendReview({ id: sessionId, data: feedbackData }, {
       onSuccess: () => {
-        try {
-          const reviewed = JSON.parse(localStorage.getItem('reviewed_session_ids') || '[]');
-          if (sessionId && !reviewed.includes(sessionId)) {
-            reviewed.push(sessionId);
-            localStorage.setItem('reviewed_session_ids', JSON.stringify(reviewed));
-          }
-        } catch (e) {}
+        markSessionAsReviewed(sessionId);
         reset();
         onClose();
       },
