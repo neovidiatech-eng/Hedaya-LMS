@@ -97,8 +97,29 @@ export default function Sessions() {
         const startDate = rawStartDate < todayStr ? todayStr : rawStartDate;
         const endDate = rawEndDate;
 
+        const rawStudent = formData.student;
+        let studentId: string | undefined;
+        let studentIds: string[] | undefined;
+        let isGroup: boolean | undefined;
+
+        if (Array.isArray(rawStudent)) {
+          const filtered = rawStudent.filter(Boolean);
+          if (filtered.length === 1) {
+            studentId = filtered[0];
+            studentIds = filtered;
+          } else if (filtered.length > 1) {
+            studentIds = filtered;
+            isGroup = true;
+          }
+        } else if (typeof rawStudent === 'string' && rawStudent) {
+          studentId = rawStudent;
+          studentIds = [rawStudent];
+        }
+
         await createRecurringSchedule.mutateAsync({
-          studentId: formData.student,
+          ...(studentId ? { studentId } : {}),
+          ...(studentIds?.length ? { studentIds } : {}),
+          ...(isGroup ? { isGroup: true } : {}),
           teacherId: formData.teacher,
           subject_id: formData.subject,
           title: formData.title,
@@ -110,7 +131,6 @@ export default function Sessions() {
           startDate,
           endDate,
           notification_Time: formData.notification_Time || "10",
-          // type: formData.type,
         });
       } else {
         // Single Session Scheduling
@@ -118,8 +138,29 @@ export default function Sessions() {
         const [hour, minute] = data.startTime.split(":").map(Number);
         const localDate = new Date(year, month - 1, day, hour, minute);
 
+        const rawStudent = data.student;
+        let studentId: string | undefined;
+        let studentIds: string[] | undefined;
+        let isGroup: boolean | undefined;
+
+        if (Array.isArray(rawStudent)) {
+          const filtered = rawStudent.filter(Boolean);
+          if (filtered.length === 1) {
+            studentId = filtered[0];
+            studentIds = filtered;
+          } else if (filtered.length > 1) {
+            studentIds = filtered;
+            isGroup = true;
+          }
+        } else if (typeof rawStudent === 'string' && rawStudent) {
+          studentId = rawStudent;
+          studentIds = [rawStudent];
+        }
+
         await createSchedule.mutateAsync({
-          studentId: data.student,
+          ...(studentId ? { studentId } : {}),
+          ...(studentIds?.length ? { studentIds } : {}),
+          ...(isGroup ? { isGroup: true } : {}),
           teacherId: data.teacher,
           subject_id: data.subject,
           title: data.title,
@@ -127,7 +168,6 @@ export default function Sessions() {
           ...(!data.notes ? {} : { notes: data.notes }),
           link: data.meetingLink || "",
           start_time: localDate.toISOString(),
-          // type: data.type,
           notification_Time: data.notification_Time,
         });
       }
