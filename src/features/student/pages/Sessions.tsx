@@ -67,10 +67,10 @@ export default function Sessions() {
 
       const start = new Date(session.start_time);
       const end = new Date(session.end_time);
-      const twentyMinsAfterEnd = new Date(end.getTime() + 20 * 60000);
+      const thirtyMinsAfterEnd = new Date(end.getTime() + 30 * 60000);
 
       const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60000);
-      return now >= twentyMinsAfterEnd && start >= fortyEightHoursAgo;
+      return now >= thirtyMinsAfterEnd && start >= fortyEightHoursAgo;
     });
 
     if (expiredSession) {
