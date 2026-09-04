@@ -119,7 +119,7 @@ export default function Sessions() {
         await createRecurringSchedule.mutateAsync({
           ...(studentId ? { studentId } : {}),
           ...(studentIds?.length ? { studentIds } : {}),
-          ...(isGroup ? { isGroup: true } : {}),
+          ...(isGroup ? { isGroup: true, maxStudents: studentIds?.length || "unlimited" } : {}),
           teacherId: formData.teacher,
           subject_id: formData.subject,
           title: formData.title,
@@ -160,7 +160,7 @@ export default function Sessions() {
         await createSchedule.mutateAsync({
           ...(studentId ? { studentId } : {}),
           ...(studentIds?.length ? { studentIds } : {}),
-          ...(isGroup ? { isGroup: true } : {}),
+          ...(isGroup ? { isGroup: true, maxStudents: studentIds?.length || "unlimited" } : {}),
           teacherId: data.teacher,
           subject_id: data.subject,
           title: data.title,
@@ -479,15 +479,26 @@ export default function Sessions() {
                       <span className="font-medium text-gray-900">
                         {session.title}
                       </span>
-                      {/* {(session.is_recurring || session.parent_recurring_id) && (
-                          <span title={language === 'ar' ? 'جلسة متكررة' : 'Recurring Session'} className="flex items-center justify-center p-1 bg-primary-50 text-indigo-500 rounded text-xs">
-                            <RefreshCw className="w-3 h-3" />
-                          </span>
-                       )} */}
+                      {session.isGroup && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">
+                          {language === 'ar' ? 'جماعية' : 'Group'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-700 text-right">
-                    {session.student.user.name}
+                    {session.isGroup || (session.groupStudents && session.groupStudents.length > 0) ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-purple-700 text-xs">
+                          {language === 'ar' ? 'حصة جماعية' : 'Group Session'} ({session.groupStudents?.length || (session.student ? 1 : 0)})
+                        </span>
+                        <span className="text-xs text-gray-500 max-w-[200px] truncate" title={session.groupStudents?.map(gs => gs.student?.user?.name).filter(Boolean).join(', ') || session.student?.user?.name || ''}>
+                          {session.groupStudents?.map(gs => gs.student?.user?.name).filter(Boolean).join(', ') || session.student?.user?.name || '—'}
+                        </span>
+                      </div>
+                    ) : (
+                      session.student?.user?.name || '—'
+                    )}
                   </td>
                   <td className="px-6 py-4 text-gray-700 text-right">
                     {session.teacher.user.name}

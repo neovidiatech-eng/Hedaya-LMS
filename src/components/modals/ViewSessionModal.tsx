@@ -171,12 +171,36 @@ export default function ViewSessionModal({
                   <User className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                    {t("studentLabel")}
-                  </p>
-                  <p className="text-sm font-bold text-gray-900">
-                    {session.student?.user?.name || "—"}
-                  </p>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      {t("studentLabel")}
+                    </p>
+                    {session.isGroup && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-100 text-purple-700">
+                        {language === 'ar' ? 'حصة جماعية' : 'Group'}
+                      </span>
+                    )}
+                  </div>
+                  {session.isGroup || (session.groupStudents && session.groupStudents.length > 0) ? (
+                    <div className="space-y-1">
+                      {session.groupStudents && session.groupStudents.length > 0 ? (
+                        session.groupStudents.map((gs) => (
+                          <div key={gs.id} className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                            <span>{gs.student?.user?.name || "—"}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm font-bold text-gray-900">
+                          {session.student?.user?.name || "—"}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm font-bold text-gray-900">
+                      {session.student?.user?.name || "—"}
+                    </p>
+                  )}
                 </div>
               </div>
 

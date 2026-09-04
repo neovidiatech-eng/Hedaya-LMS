@@ -108,25 +108,35 @@ export interface ScheduleSubject {
     updatedAt: string;
 }
 
+export interface ScheduleGroupStudent {
+    id: string;
+    scheduleId: string;
+    studentId: string;
+    student?: Student;
+}
+
 export interface Schedule {
     id: string;
     teacherId: string;
-    studentId: string;
+    studentId?: string | null;
     subjectId: string;
     status: string;
     title: string;
     description: string;
-    type: string;
+    type?: string;
     start_time: string;
     end_time: string;
     link: string;
     notes: string | null;
     createdAt: string;
     updatedAt: string;
-    is_recurring: boolean;
+    is_recurring?: boolean;
+    isGroup?: boolean;
+    maxStudents?: string | number;
     day_of_week: string | null;
     parent_recurring_id: string | null;
-    student: Student;
+    student?: Student | null;
+    groupStudents?: ScheduleGroupStudent[];
     teacher: Teacher;
     subject?: ScheduleSubject;
 }

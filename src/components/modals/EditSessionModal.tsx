@@ -135,8 +135,19 @@ export default function EditSessionModal({ isOpen, onClose, session, groupedSess
                   <User className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('studentLabel')}</p>
-                  <p className="text-sm font-bold text-gray-900">{currentSession.student?.user?.name || '—'}</p>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('studentLabel')}</p>
+                    {currentSession.isGroup && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-100 text-purple-700">
+                        {language === 'ar' ? 'حصة جماعية' : 'Group'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-gray-900">
+                    {currentSession.isGroup || (currentSession.groupStudents && currentSession.groupStudents.length > 0)
+                      ? currentSession.groupStudents?.map(gs => gs.student?.user?.name).filter(Boolean).join(', ') || currentSession.student?.user?.name || '—'
+                      : currentSession.student?.user?.name || '—'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-gray-50 rounded-2xl p-4 border border-gray-100">
