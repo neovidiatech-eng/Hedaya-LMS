@@ -18,7 +18,7 @@ import { Schedule, UpdateSchedulePayload } from "../../../types/scheduales";
 import {
   MultipleSessionsPayload,
 } from "../../../lib/schemas/SessionSchema";
-import { TableSkeleton } from "../../../components/ui/CustomSkeleton";
+// import { TableSkeleton } from "../../../components/ui/CustomSkeleton";
 
 import { useSubjects } from "../hooks/useSubjects";
 import { Subject } from "../../../types/subject";
@@ -194,7 +194,7 @@ export default function Sessions() {
     fromDate,
     toDate,
   }), [fromDate, toDate]);
-  const { data: searchResults, isLoading } = useSearchSchedules(debouncedSearch, currentPage, itemsPerPage, dateFilters);
+  const { data: searchResults } = useSearchSchedules(debouncedSearch, currentPage, itemsPerPage, dateFilters);
 
   const scheduleData: Schedule[] = useMemo(() => {
     if (!searchResults) return [];

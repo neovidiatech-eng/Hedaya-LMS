@@ -6,7 +6,7 @@ import ViewSessionModal from '../../../components/modals/ViewSessionModal';
 import { Schedule } from '../../../types/scheduales';
 import {  useUserSessions } from '../../../hooks/useSessions';
 import { TableSkeleton } from '../../../components/ui/CustomSkeleton';
-import { useSettings } from '../../../contexts/SettingsContext';
+// import { useSettings } from '../../../contexts/SettingsContext';
 import CreateRequestModal from '../../../components/modals/CreateRequestModal';
 
 export default function Sessions() {
