@@ -98,55 +98,79 @@ export default function Sessions() {
         const startDate = rawStartDate < todayStr ? todayStr : rawStartDate;
         const endDate = rawEndDate;
 
-        const studentIds: string[] = Array.isArray(formData.student)
-          ? formData.student.filter(Boolean)
-          : [formData.student].filter(Boolean);
+        const rawStudent = formData.student;
+        let studentId: string | undefined;
+        let studentIds: string[] | undefined;
+        let isGroup: boolean | undefined;
 
-        await Promise.all(
-          studentIds.map((studentId) =>
-            createRecurringSchedule.mutateAsync({
-              studentId,
-              teacherId: formData.teacher,
-              subject_id: formData.subject,
-              title: formData.title,
-              ...(!formData.description ? {} : { description: formData.description }),
-              ...(!formData.notes ? {} : { notes: formData.notes }),
-              link: formData.meetingLink || "",
-              startTime: sessions[0]?.time || "00:00",
-              days: selectedDays,
-              startDate,
-              endDate,
-              notification_Time: formData.notification_Time || "10",
-              // type: formData.type,
-            })
-          )
-        );
+        if (Array.isArray(rawStudent)) {
+          const filtered = rawStudent.filter(Boolean);
+          if (filtered.length === 1) {
+            studentId = filtered[0];
+            studentIds = filtered;
+          } else if (filtered.length > 1) {
+            studentIds = filtered;
+            isGroup = true;
+          }
+        } else if (typeof rawStudent === 'string' && rawStudent) {
+          studentId = rawStudent;
+          studentIds = [rawStudent];
+        }
+
+        await createRecurringSchedule.mutateAsync({
+          ...(studentId ? { studentId } : {}),
+          ...(studentIds?.length ? { studentIds } : {}),
+          ...(isGroup ? { isGroup: true, maxStudents: studentIds?.length || "unlimited" } : {}),
+          teacherId: formData.teacher,
+          subject_id: formData.subject,
+          title: formData.title,
+          ...(!formData.description ? {} : { description: formData.description }),
+          ...(!formData.notes ? {} : { notes: formData.notes }),
+          link: formData.meetingLink || "",
+          startTime: sessions[0]?.time || "00:00",
+          days: selectedDays,
+          startDate,
+          endDate,
+          notification_Time: formData.notification_Time || "10",
+        });
       } else {
         // Single Session Scheduling
         const [year, month, day] = data.sessionDate.split("-").map(Number);
         const [hour, minute] = data.startTime.split(":").map(Number);
         const localDate = new Date(year, month - 1, day, hour, minute);
 
-        const studentIds: string[] = Array.isArray(data.student)
-          ? data.student.filter(Boolean)
-          : [data.student].filter(Boolean);
+        const rawStudent = data.student;
+        let studentId: string | undefined;
+        let studentIds: string[] | undefined;
+        let isGroup: boolean | undefined;
 
-        await Promise.all(
-          studentIds.map((studentId) =>
-            createSchedule.mutateAsync({
-              studentId,
-              teacherId: data.teacher,
-              subject_id: data.subject,
-              title: data.title,
-              ...(!data.description ? {} : { description: data.description }),
-              ...(!data.notes ? {} : { notes: data.notes }),
-              link: data.meetingLink || "",
-              start_time: localDate.toISOString(),
-              // type: data.type,
-              notification_Time: data.notification_Time,
-            })
-          )
-        );
+        if (Array.isArray(rawStudent)) {
+          const filtered = rawStudent.filter(Boolean);
+          if (filtered.length === 1) {
+            studentId = filtered[0];
+            studentIds = filtered;
+          } else if (filtered.length > 1) {
+            studentIds = filtered;
+            isGroup = true;
+          }
+        } else if (typeof rawStudent === 'string' && rawStudent) {
+          studentId = rawStudent;
+          studentIds = [rawStudent];
+        }
+
+        await createSchedule.mutateAsync({
+          ...(studentId ? { studentId } : {}),
+          ...(studentIds?.length ? { studentIds } : {}),
+          ...(isGroup ? { isGroup: true, maxStudents: studentIds?.length || "unlimited" } : {}),
+          teacherId: data.teacher,
+          subject_id: data.subject,
+          title: data.title,
+          ...(!data.description ? {} : { description: data.description }),
+          ...(!data.notes ? {} : { notes: data.notes }),
+          link: data.meetingLink || "",
+          start_time: localDate.toISOString(),
+          notification_Time: data.notification_Time,
+        });
       }
       setShowAddModal(false);
     } catch (error) {
@@ -462,122 +486,124 @@ export default function Sessions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="p-0">
-                    <TableSkeleton rows={itemsPerPage} columns={8} />
+              {displaySchedules.map((session) => (
+                <tr
+                  key={session.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-900">
+                        {session.title}
+                      </span>
+                      {session.isGroup && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">
+                          {language === 'ar' ? 'جماعية' : 'Group'}
+                        </span>
+                      )}
+                    </div>
                   </td>
-                </tr>
-              ) : displaySchedules.length > 0 ? (
-                displaySchedules.map((session) => (
-                  <tr
-                    key={session.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900">
-                          {session.title || "—"}
+                  <td className="px-6 py-4 text-gray-700 text-right">
+                    {session.isGroup || (session.groupStudents && session.groupStudents.length > 0) ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-purple-700 text-xs">
+                          {language === 'ar' ? 'حصة جماعية' : 'Group Session'} ({session.groupStudents?.length || (session.student ? 1 : 0)})
+                        </span>
+                        <span className="text-xs text-gray-500 max-w-[200px] truncate" title={session.groupStudents?.map(gs => gs.student?.user?.name).filter(Boolean).join(', ') || session.student?.user?.name || ''}>
+                          {session.groupStudents?.map(gs => gs.student?.user?.name).filter(Boolean).join(', ') || session.student?.user?.name || '—'}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 text-right">
-                      {session.student?.user?.name || "—"}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 text-right">
-                      {session.teacher?.user?.name || "—"}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-primary font-medium">
-                        {getSubjectName(session)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 text-right">
-                      {(() => {
-                        const { date, time } = formatDateTime(session.start_time);
-                        return (
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium text-gray-900">
-                              {date || "—"}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              {time && (
-                                <span className="text-sm text-gray-500" dir="ltr">
-                                  {time}
-                                </span>
-                              )}
-                            </div>
+                    ) : (
+                      session.student?.user?.name || '—'
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700 text-right">
+                    {session.teacher.user.name}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span className="text-primary font-medium">
+                      {getSubjectName(session)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-700 text-right">
+                    {(() => {
+                      const { date, time } = formatDateTime(session.start_time);
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-gray-900">
+                            {date}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {time && (
+                              <span className="text-sm text-gray-500" dir="ltr">
+                                {time}
+                              </span>
+                            )}
                           </div>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 text-right">
-                      {calculateDuration(session.start_time, session.end_time)}{" "}
-                      {t("minutes")}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyle(session.status)}`}
+                        </div>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700 text-right">
+                    {calculateDuration(session.start_time, session.end_time)}{" "}
+                    {t("minutes")}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyle(session.status)}`}
+                    >
+                      {t(session.status?.toLowerCase() || "")}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 justify-end">
+                      <button
+                        onClick={() => {
+                          const grouped = session.parent_recurring_id
+                            ? scheduleData.filter(
+                                (s: Schedule) =>
+                                  s.parent_recurring_id ===
+                                  session.parent_recurring_id,
+                              )
+                            : [session];
+                          setGroupedSessions(grouped);
+                          setSelectedSession(session);
+                          setShowViewModal(true);
+                        }}
+                        className="p-2 icon-btn-primary rounded-lg transition-colors"
+                        title={t("view")}
                       >
-                        {session.status ? (t(session.status.toLowerCase()) || session.status) : "—"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 justify-end">
-                        <button
-                          onClick={() => {
-                            const grouped = session.parent_recurring_id
-                              ? scheduleData.filter(
-                                  (s: Schedule) =>
-                                    s?.parent_recurring_id ===
-                                    session.parent_recurring_id,
-                                )
-                              : [session];
-                            setGroupedSessions(grouped);
-                            setSelectedSession(session);
-                            setShowViewModal(true);
-                          }}
-                          className="p-2 icon-btn-primary rounded-lg transition-colors"
-                          title={t("view")}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const grouped = session.parent_recurring_id
-                              ? scheduleData.filter(
-                                  (s: Schedule) =>
-                                    s?.parent_recurring_id ===
-                                    session.parent_recurring_id,
-                                )
-                              : [session];
-                            setGroupedSessions(grouped);
-                            setSelectedSession(session);
-                            setShowEditModal(true);
-                          }}
-                          className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                          title={t("edit")}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSession(session)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title={t("delete")}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                    {t("noSessionsFound") || "No sessions found"}
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const grouped = session.parent_recurring_id
+                            ? scheduleData.filter(
+                                (s: Schedule) =>
+                                  s.parent_recurring_id ===
+                                  session.parent_recurring_id,
+                              )
+                            : [session];
+                          setGroupedSessions(grouped);
+                          setSelectedSession(session);
+                          setShowEditModal(true);
+                        }}
+                        className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                        title={t("edit")}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSession(session)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title={t("delete")}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
