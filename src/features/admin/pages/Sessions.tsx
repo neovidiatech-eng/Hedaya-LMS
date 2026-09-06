@@ -18,6 +18,7 @@ import { Schedule, UpdateSchedulePayload } from "../../../types/scheduales";
 import {
   MultipleSessionsPayload,
 } from "../../../lib/schemas/SessionSchema";
+import { TableSkeleton } from "../../../components/ui/CustomSkeleton";
 
 import { useSubjects } from "../hooks/useSubjects";
 import { Subject } from "../../../types/subject";
@@ -97,39 +98,55 @@ export default function Sessions() {
         const startDate = rawStartDate < todayStr ? todayStr : rawStartDate;
         const endDate = rawEndDate;
 
-        await createRecurringSchedule.mutateAsync({
-          studentId: formData.student,
-          teacherId: formData.teacher,
-          subject_id: formData.subject,
-          title: formData.title,
-          ...(!formData.description ? {} : { description: formData.description }),
-          ...(!formData.notes ? {} : { notes: formData.notes }),
-          link: formData.meetingLink || "",
-          startTime: sessions[0]?.time || "00:00",
-          days: selectedDays,
-          startDate,
-          endDate,
-          notification_Time: formData.notification_Time || "10",
-          // type: formData.type,
-        });
+        const studentIds: string[] = Array.isArray(formData.student)
+          ? formData.student.filter(Boolean)
+          : [formData.student].filter(Boolean);
+
+        await Promise.all(
+          studentIds.map((studentId) =>
+            createRecurringSchedule.mutateAsync({
+              studentId,
+              teacherId: formData.teacher,
+              subject_id: formData.subject,
+              title: formData.title,
+              ...(!formData.description ? {} : { description: formData.description }),
+              ...(!formData.notes ? {} : { notes: formData.notes }),
+              link: formData.meetingLink || "",
+              startTime: sessions[0]?.time || "00:00",
+              days: selectedDays,
+              startDate,
+              endDate,
+              notification_Time: formData.notification_Time || "10",
+              // type: formData.type,
+            })
+          )
+        );
       } else {
         // Single Session Scheduling
         const [year, month, day] = data.sessionDate.split("-").map(Number);
         const [hour, minute] = data.startTime.split(":").map(Number);
         const localDate = new Date(year, month - 1, day, hour, minute);
 
-        await createSchedule.mutateAsync({
-          studentId: data.student,
-          teacherId: data.teacher,
-          subject_id: data.subject,
-          title: data.title,
-          ...(!data.description ? {} : { description: data.description }),
-          ...(!data.notes ? {} : { notes: data.notes }),
-          link: data.meetingLink || "",
-          start_time: localDate.toISOString(),
-          // type: data.type,
-          notification_Time: data.notification_Time,
-        });
+        const studentIds: string[] = Array.isArray(data.student)
+          ? data.student.filter(Boolean)
+          : [data.student].filter(Boolean);
+
+        await Promise.all(
+          studentIds.map((studentId) =>
+            createSchedule.mutateAsync({
+              studentId,
+              teacherId: data.teacher,
+              subject_id: data.subject,
+              title: data.title,
+              ...(!data.description ? {} : { description: data.description }),
+              ...(!data.notes ? {} : { notes: data.notes }),
+              link: data.meetingLink || "",
+              start_time: localDate.toISOString(),
+              // type: data.type,
+              notification_Time: data.notification_Time,
+            })
+          )
+        );
       }
       setShowAddModal(false);
     } catch (error) {
@@ -153,70 +170,87 @@ export default function Sessions() {
     fromDate,
     toDate,
   }), [fromDate, toDate]);
-  const { data: searchResults } = useSearchSchedules(debouncedSearch, currentPage, itemsPerPage, dateFilters);
+  const { data: searchResults, isLoading } = useSearchSchedules(debouncedSearch, currentPage, itemsPerPage, dateFilters);
 
-  const scheduleData: Schedule[] = searchResults?.data?.schedule ?? [];
+  const scheduleData: Schedule[] = useMemo(() => {
+    if (!searchResults) return [];
+    if (Array.isArray(searchResults?.data?.schedule)) return searchResults.data.schedule;
+    if (Array.isArray(searchResults?.data)) return searchResults.data;
+    if (Array.isArray(searchResults)) return searchResults;
+    return [];
+  }, [searchResults]);
 
-  const groupedSchedules: Schedule[] = [];
-  const seenParents = new Set<string>();
+  const groupedSchedules: Schedule[] = useMemo(() => {
+    const list: Schedule[] = [];
+    const seenParents = new Set<string>();
 
-  // Map each parent_recurring_id to all of its sessions in the list 
-  const parentGroups = new Map<string, Schedule[]>();
-  scheduleData.forEach((schedule: Schedule) => {
-    if (schedule.parent_recurring_id) {
-      const group = parentGroups.get(schedule.parent_recurring_id) || [];
-      group.push(schedule);
-      parentGroups.set(schedule.parent_recurring_id, group);
-    }
-  });
-
-  scheduleData.forEach((schedule: Schedule) => {
-    if (schedule.parent_recurring_id) {
-      if (!seenParents.has(schedule.parent_recurring_id)) {
-        seenParents.add(schedule.parent_recurring_id);
-
-        const groupSessions = parentGroups.get(schedule.parent_recurring_id) || [];
-        const now = new Date().getTime();
-
-        // Separate upcoming vs past sessions to determine the nearest one
-        const upcoming = groupSessions.filter(
-          (s) => new Date(s.start_time).getTime() >= now
-        );
-
-        let nearestSession = schedule;
-        if (upcoming.length > 0) {
-          // Sort upcoming ascending (closest future date first)
-          upcoming.sort(
-            (a, b) =>
-              new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-          );
-          nearestSession = upcoming[0];
-        } else if (groupSessions.length > 0) {
-          // Sort past descending (closest past date first)
-          const past = [...groupSessions];
-          past.sort(
-            (a, b) =>
-              new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-          );
-          nearestSession = past[0];
-        }
-
-        groupedSchedules.push(nearestSession);
+    // Map each parent_recurring_id to all of its sessions in the list 
+    const parentGroups = new Map<string, Schedule[]>();
+    scheduleData.forEach((schedule: Schedule) => {
+      if (schedule?.parent_recurring_id) {
+        const group = parentGroups.get(schedule.parent_recurring_id) || [];
+        group.push(schedule);
+        parentGroups.set(schedule.parent_recurring_id, group);
       }
-    } else {
-      groupedSchedules.push(schedule);
-    }
-  });
+    });
+
+    scheduleData.forEach((schedule: Schedule) => {
+      if (!schedule) return;
+      if (schedule.parent_recurring_id) {
+        if (!seenParents.has(schedule.parent_recurring_id)) {
+          seenParents.add(schedule.parent_recurring_id);
+
+          const groupSessions = parentGroups.get(schedule.parent_recurring_id) || [];
+          const now = new Date().getTime();
+
+          // Separate upcoming vs past sessions to determine the nearest one
+          const upcoming = groupSessions.filter(
+            (s) => s?.start_time && new Date(s.start_time).getTime() >= now
+          );
+
+          let nearestSession = schedule;
+          if (upcoming.length > 0) {
+            // Sort upcoming ascending (closest future date first)
+            upcoming.sort(
+              (a, b) =>
+                new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+            );
+            nearestSession = upcoming[0];
+          } else if (groupSessions.length > 0) {
+            // Sort past descending (closest past date first)
+            const past = [...groupSessions];
+            past.sort(
+              (a, b) =>
+                (b?.start_time ? new Date(b.start_time).getTime() : 0) -
+                (a?.start_time ? new Date(a.start_time).getTime() : 0)
+            );
+            nearestSession = past[0];
+          }
+
+          list.push(nearestSession);
+        }
+      } else {
+        list.push(schedule);
+      }
+    });
+
+    return list;
+  }, [scheduleData]);
 
   const totalItems = searchResults?.data?.pagination?.totalItems || 0;
   const totalPages = searchResults?.data?.pagination?.totalPages || 1;
 
-  const displaySchedules = groupedSchedules.filter((session) => {
-    const sessionDate = new Date(session.start_time);
-    const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
-    const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
-    return (!from || sessionDate >= from) && (!to || sessionDate <= to);
-  });
+  const displaySchedules = useMemo(() => {
+    return groupedSchedules.filter((session) => {
+      if (!session) return false;
+      if (!fromDate && !toDate) return true;
+      if (!session.start_time) return false;
+      const sessionDate = new Date(session.start_time);
+      const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+      const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
+      return (!from || sessionDate >= from) && (!to || sessionDate <= to);
+    });
+  }, [groupedSchedules, fromDate, toDate]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -287,7 +321,6 @@ export default function Sessions() {
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
       case "scheduled":
-        return "bg-primary-50 text-blue-700 border-blue-200";
       case "planned":
         return "bg-primary-50 text-blue-700 border-blue-200";
       case "completed":
@@ -303,19 +336,19 @@ export default function Sessions() {
   const dynamicsubjects = subjects?.subjects || [];
 
   const getSubjectName = (session: Schedule) => {
-    if (session.subject) {
+    if (session?.subject) {
       return language === "ar"
-        ? session.subject.name_ar
-        : session.subject.name_en;
+        ? session.subject.name_ar || session.subject.name_en || ""
+        : session.subject.name_en || session.subject.name_ar || "";
     }
     const subject = dynamicsubjects.find(
-      (s: Subject) => s.id === session.subjectId,
+      (s: Subject) => s?.id === session?.subjectId,
     );
     return subject
       ? language === "ar"
         ? subject.name_ar
         : subject.name_en
-      : "subject";
+      : "—";
   };
 
   return (
@@ -429,113 +462,122 @@ export default function Sessions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {displaySchedules.map((session) => (
-                <tr
-                  key={session.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">
-                        {session.title}
-                      </span>
-                      {/* {(session.is_recurring || session.parent_recurring_id) && (
-                          <span title={language === 'ar' ? 'جلسة متكررة' : 'Recurring Session'} className="flex items-center justify-center p-1 bg-primary-50 text-indigo-500 rounded text-xs">
-                            <RefreshCw className="w-3 h-3" />
-                          </span>
-                       )} */}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 text-right">
-                    {session.student.user.name}
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 text-right">
-                    {session.teacher.user.name}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="text-primary font-medium">
-                      {getSubjectName(session)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 text-right">
-                    {(() => {
-                      const { date, time } = formatDateTime(session.start_time);
-                      return (
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium text-gray-900">
-                            {date}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            {time && (
-                              <span className="text-sm text-gray-500" dir="ltr">
-                                {time}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 text-right">
-                    {calculateDuration(session.start_time, session.end_time)}{" "}
-                    {t("minutes")}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyle(session.status)}`}
-                    >
-                      {t(session.status?.toLowerCase() || "")}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button
-                        onClick={() => {
-                          const grouped = session.parent_recurring_id
-                            ? scheduleData.filter(
-                                (s: Schedule) =>
-                                  s.parent_recurring_id ===
-                                  session.parent_recurring_id,
-                              )
-                            : [session];
-                          setGroupedSessions(grouped);
-                          setSelectedSession(session);
-                          setShowViewModal(true);
-                        }}
-                        className="p-2 icon-btn-primary rounded-lg transition-colors"
-                        title={t("view")}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const grouped = session.parent_recurring_id
-                            ? scheduleData.filter(
-                                (s: Schedule) =>
-                                  s.parent_recurring_id ===
-                                  session.parent_recurring_id,
-                              )
-                            : [session];
-                          setGroupedSessions(grouped);
-                          setSelectedSession(session);
-                          setShowEditModal(true);
-                        }}
-                        className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                        title={t("edit")}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSession(session)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title={t("delete")}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="p-0">
+                    <TableSkeleton rows={itemsPerPage} columns={8} />
                   </td>
                 </tr>
-              ))}
+              ) : displaySchedules.length > 0 ? (
+                displaySchedules.map((session) => (
+                  <tr
+                    key={session.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">
+                          {session.title || "—"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 text-right">
+                      {session.student?.user?.name || "—"}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 text-right">
+                      {session.teacher?.user?.name || "—"}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-primary font-medium">
+                        {getSubjectName(session)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 text-right">
+                      {(() => {
+                        const { date, time } = formatDateTime(session.start_time);
+                        return (
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium text-gray-900">
+                              {date || "—"}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {time && (
+                                <span className="text-sm text-gray-500" dir="ltr">
+                                  {time}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 text-right">
+                      {calculateDuration(session.start_time, session.end_time)}{" "}
+                      {t("minutes")}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyle(session.status)}`}
+                      >
+                        {session.status ? (t(session.status.toLowerCase()) || session.status) : "—"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => {
+                            const grouped = session.parent_recurring_id
+                              ? scheduleData.filter(
+                                  (s: Schedule) =>
+                                    s?.parent_recurring_id ===
+                                    session.parent_recurring_id,
+                                )
+                              : [session];
+                            setGroupedSessions(grouped);
+                            setSelectedSession(session);
+                            setShowViewModal(true);
+                          }}
+                          className="p-2 icon-btn-primary rounded-lg transition-colors"
+                          title={t("view")}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const grouped = session.parent_recurring_id
+                              ? scheduleData.filter(
+                                  (s: Schedule) =>
+                                    s?.parent_recurring_id ===
+                                    session.parent_recurring_id,
+                                )
+                              : [session];
+                            setGroupedSessions(grouped);
+                            setSelectedSession(session);
+                            setShowEditModal(true);
+                          }}
+                          className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title={t("edit")}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSession(session)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title={t("delete")}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                    {t("noSessionsFound") || "No sessions found"}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -222,7 +222,7 @@ export default function Sessions() {
                       <td className="px-6 py-4 text-start">
                         <span className="font-medium text-gray-900">{session.title}</span>
                       </td>
-                      <td className="px-6 py-4 text-gray-700 text-start">{session.teacher.user.name}</td>
+                      <td className="px-6 py-4 text-gray-700 text-start">{session.teacher?.user?.name || "—"}</td>
                       <td className="px-6 py-4 text-start">
                         <span className="text-primary font-medium">{getSubjectName(session)}</span>
                       </td>

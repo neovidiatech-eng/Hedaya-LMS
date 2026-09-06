@@ -270,7 +270,7 @@ export default function Sessions() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-700 text-start">
-                        {session.student.user.name}
+                        {session.student?.user?.name || "—"}
                       </td>
                       <td className="px-6 py-4 text-start">
                         <span className="text-primary font-medium">
