@@ -186,13 +186,6 @@
   font-weight: 700 !important;
 }
 
-.ant-select-item-option-selected .ant-select-item-option-state,
-.ant-select-item-option-selected .ant-select-item-option-state .anticon,
-.ant-select-item-option-selected .ant-select-item-option-state .anticon-check,
-.ant-select-item-option-state {
-  color: var(--color-primary) !important;
-}
-
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
   background-color: rgba(54, 149, 137, 0.07) !important;
 }

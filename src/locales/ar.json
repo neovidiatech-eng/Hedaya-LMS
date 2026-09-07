@@ -462,5 +462,6 @@
   "noWithdrawalsInPeriod": "لا توجد عمليات السحب في هذه الفترة",
   "unknownStatus": "غير معروف",
   "pleaseSelectDateRange": "يرجى تحديد مدة زمنية والضغط على \"تطبيق الفلتر\" لعرض البيانات",
-  "approved": "مقبول"
+  "approved": "مقبول",
+  "sidebar_notification": "الإشعارات"
 }

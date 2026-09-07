@@ -18,6 +18,7 @@ import { Schedule, UpdateSchedulePayload } from "../../../types/scheduales";
 import {
   MultipleSessionsPayload,
 } from "../../../lib/schemas/SessionSchema";
+// import { TableSkeleton } from "../../../components/ui/CustomSkeleton";
 
 import { useSubjects } from "../hooks/useSubjects";
 import { Subject } from "../../../types/subject";
@@ -195,68 +196,85 @@ export default function Sessions() {
   }), [fromDate, toDate]);
   const { data: searchResults } = useSearchSchedules(debouncedSearch, currentPage, itemsPerPage, dateFilters);
 
-  const scheduleData: Schedule[] = searchResults?.data?.schedule ?? [];
+  const scheduleData: Schedule[] = useMemo(() => {
+    if (!searchResults) return [];
+    if (Array.isArray(searchResults?.data?.schedule)) return searchResults.data.schedule;
+    if (Array.isArray(searchResults?.data)) return searchResults.data;
+    if (Array.isArray(searchResults)) return searchResults;
+    return [];
+  }, [searchResults]);
 
-  const groupedSchedules: Schedule[] = [];
-  const seenParents = new Set<string>();
+  const groupedSchedules: Schedule[] = useMemo(() => {
+    const list: Schedule[] = [];
+    const seenParents = new Set<string>();
 
-  // Map each parent_recurring_id to all of its sessions in the list 
-  const parentGroups = new Map<string, Schedule[]>();
-  scheduleData.forEach((schedule: Schedule) => {
-    if (schedule.parent_recurring_id) {
-      const group = parentGroups.get(schedule.parent_recurring_id) || [];
-      group.push(schedule);
-      parentGroups.set(schedule.parent_recurring_id, group);
-    }
-  });
-
-  scheduleData.forEach((schedule: Schedule) => {
-    if (schedule.parent_recurring_id) {
-      if (!seenParents.has(schedule.parent_recurring_id)) {
-        seenParents.add(schedule.parent_recurring_id);
-
-        const groupSessions = parentGroups.get(schedule.parent_recurring_id) || [];
-        const now = new Date().getTime();
-
-        // Separate upcoming vs past sessions to determine the nearest one
-        const upcoming = groupSessions.filter(
-          (s) => new Date(s.start_time).getTime() >= now
-        );
-
-        let nearestSession = schedule;
-        if (upcoming.length > 0) {
-          // Sort upcoming ascending (closest future date first)
-          upcoming.sort(
-            (a, b) =>
-              new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-          );
-          nearestSession = upcoming[0];
-        } else if (groupSessions.length > 0) {
-          // Sort past descending (closest past date first)
-          const past = [...groupSessions];
-          past.sort(
-            (a, b) =>
-              new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-          );
-          nearestSession = past[0];
-        }
-
-        groupedSchedules.push(nearestSession);
+    // Map each parent_recurring_id to all of its sessions in the list 
+    const parentGroups = new Map<string, Schedule[]>();
+    scheduleData.forEach((schedule: Schedule) => {
+      if (schedule?.parent_recurring_id) {
+        const group = parentGroups.get(schedule.parent_recurring_id) || [];
+        group.push(schedule);
+        parentGroups.set(schedule.parent_recurring_id, group);
       }
-    } else {
-      groupedSchedules.push(schedule);
-    }
-  });
+    });
+
+    scheduleData.forEach((schedule: Schedule) => {
+      if (!schedule) return;
+      if (schedule.parent_recurring_id) {
+        if (!seenParents.has(schedule.parent_recurring_id)) {
+          seenParents.add(schedule.parent_recurring_id);
+
+          const groupSessions = parentGroups.get(schedule.parent_recurring_id) || [];
+          const now = new Date().getTime();
+
+          // Separate upcoming vs past sessions to determine the nearest one
+          const upcoming = groupSessions.filter(
+            (s) => s?.start_time && new Date(s.start_time).getTime() >= now
+          );
+
+          let nearestSession = schedule;
+          if (upcoming.length > 0) {
+            // Sort upcoming ascending (closest future date first)
+            upcoming.sort(
+              (a, b) =>
+                new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+            );
+            nearestSession = upcoming[0];
+          } else if (groupSessions.length > 0) {
+            // Sort past descending (closest past date first)
+            const past = [...groupSessions];
+            past.sort(
+              (a, b) =>
+                (b?.start_time ? new Date(b.start_time).getTime() : 0) -
+                (a?.start_time ? new Date(a.start_time).getTime() : 0)
+            );
+            nearestSession = past[0];
+          }
+
+          list.push(nearestSession);
+        }
+      } else {
+        list.push(schedule);
+      }
+    });
+
+    return list;
+  }, [scheduleData]);
 
   const totalItems = searchResults?.data?.pagination?.totalItems || 0;
   const totalPages = searchResults?.data?.pagination?.totalPages || 1;
 
-  const displaySchedules = groupedSchedules.filter((session) => {
-    const sessionDate = new Date(session.start_time);
-    const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
-    const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
-    return (!from || sessionDate >= from) && (!to || sessionDate <= to);
-  });
+  const displaySchedules = useMemo(() => {
+    return groupedSchedules.filter((session) => {
+      if (!session) return false;
+      if (!fromDate && !toDate) return true;
+      if (!session.start_time) return false;
+      const sessionDate = new Date(session.start_time);
+      const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+      const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
+      return (!from || sessionDate >= from) && (!to || sessionDate <= to);
+    });
+  }, [groupedSchedules, fromDate, toDate]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -327,7 +345,6 @@ export default function Sessions() {
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
       case "scheduled":
-        return "bg-primary-50 text-blue-700 border-blue-200";
       case "planned":
         return "bg-primary-50 text-blue-700 border-blue-200";
       case "completed":
@@ -343,19 +360,19 @@ export default function Sessions() {
   const dynamicsubjects = subjects?.subjects || [];
 
   const getSubjectName = (session: Schedule) => {
-    if (session.subject) {
+    if (session?.subject) {
       return language === "ar"
-        ? session.subject.name_ar
-        : session.subject.name_en;
+        ? session.subject.name_ar || session.subject.name_en || ""
+        : session.subject.name_en || session.subject.name_ar || "";
     }
     const subject = dynamicsubjects.find(
-      (s: Subject) => s.id === session.subjectId,
+      (s: Subject) => s?.id === session?.subjectId,
     );
     return subject
       ? language === "ar"
         ? subject.name_ar
         : subject.name_en
-      : "subject";
+      : "—";
   };
 
   return (

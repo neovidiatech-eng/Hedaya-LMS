@@ -632,5 +632,6 @@
   "approved": "مقبول",
   "exporting": "جاري التحميل...",
   "teachersExportedSuccessfully": "تم تصدير بيانات المعلمين بنجاح",
-  "teachersExportError": "حدث خطأ أثناء تصدير بيانات المعلمين"
+  "teachersExportError": "حدث خطأ أثناء تصدير بيانات المعلمين",
+  "sidebar_notification": "الإشعارات"
 }
